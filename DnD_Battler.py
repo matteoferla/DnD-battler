@@ -227,10 +227,30 @@ class Creature:
         self.hurtful = 0
         if not 'attack_parameters' in kwargs:
             #Benefit of doubt. Given 'em a dagger .
-            chosen_ab=self.ability_bonuses[max('str','dex', key= lambda ab: self.ability_bonuses[ab])]
-            kwargs['attack_parameters']=[[self.proficiency+chosen_ab,chosen_ab,4]]
-        self.attack_parameters = kwargs['attack_parameters']
-        self._attack_parse(self.attack_parameters)
+            kwargs['attack_parameters']='dagger'
+        if type(kwargs['attack_parameters']) is str:
+            try:
+                import json
+                x=json.loads(kwargs['attack_parameters'])
+                self._attack_parse(x)
+                self.attack_parameters = x
+            except:
+                weapons={'dagger':4,'shortsword':6,'longsword':8,'bastardsword':10, 'greatsword':12,'rapier':8,'scimitar':6}
+                for w in weapons.keys():
+                    if kwargs['attack_parameters'].lower().find(w)>-1:
+                        #TODO fix the fact that a it gives the finesse option to all. Add more.
+                        chosen_ab=self.ability_bonuses[max('str','dex', key= lambda ab: self.ability_bonuses[ab])]
+                        self.attack_parameters = [[w,self.proficiency+chosen_ab,chosen_ab,weapons[w]]]
+                        self._attack_parse(self.attack_parameters)
+                        self.log+="Weapon matched by str to "+w+N
+                        break
+                else:
+                    raise Exception("Cannot figure out what is: "+kwargs['attack_parameters'])
+        elif type(kwargs['attack_parameters']) is list:
+            self.attack_parameters = kwargs['attack_parameters']
+            self._attack_parse(self.attack_parameters)
+        else:
+            raise Exception('Could not determine weapon')
         ##Weird bit needing upgrade.
         if 'alt_attack' in kwargs and type(kwargs['alt_attack']) is list:
             self.alt_attack = {'name': kwargs['alt_attack'][0],
@@ -296,7 +316,7 @@ class Creature:
                 print('Please group abilities in the dictionary abilities next time')
                 if not 'abilities' in kwargs.keys():
                     kwargs['abilities']={}
-                kwargs['abilities'][ab]=kwargs['ab']
+                kwargs['abilities'][ab]=kwargs[ab]
             if ab+"_bonus" in kwargs.keys():
                 print('Please group ability_bonuses in the dictionary ability_bonuses next time')
                 if not 'ability_bonuses' in kwargs.keys():
@@ -976,7 +996,7 @@ class Encounter():
 if __name__=="__main__":
     rounds = 100
 
-    wwe=Encounter("netsharpshooter","druid","barbarian",{"name":"muckup","base":"commoner"},"tarrasque", "polar","polar")
+    wwe=Encounter("netsharpshooter","druid","barbarian",{"name":"muckup","base":"commoner","attack_parameters":'dagger'},"tarrasque", "polar","polar")
     print(wwe.go_to_war(rounds))
 
     ### KILL PEACEFULLY
