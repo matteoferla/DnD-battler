@@ -1,6 +1,6 @@
 # DnD-battler
 A 5e D&amp;D battle simulator written for my own amusement to test some hypotheses.
-Edit: [An online version of the simulator is hosted in Openshift](battle-matteoferla.rhcloud.com)
+Edit: [An online version of the simulator is hosted in Openshift](http://battle-matteoferla.rhcloud.com)
 Edit: I started making a spreadsheet of a beastiary, which I was hoping to use to get all the presets that are currently hardcoded, but I have run out of time for now to do them all.
 The code nevertheless if give only a string to initialise a Creature it will check in both. Disclaimer based on my vague legal knowledge, download the spreadsheet only if you own the MM.
 
