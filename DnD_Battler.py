@@ -986,7 +986,8 @@ class Encounter():
             return [joe for joe in folk if joe.condition == 'normal']
 
         def _random(folk):
-            return random.shuffle(folk)
+            randomized = random.shuffle(folk)
+            return randomized
 
         def _weakest(folk):
             return sorted(folk, key=lambda query: query.hp)
