@@ -5,7 +5,7 @@ Edit: I started making a spreadsheet of a beastiary, which I was hoping to use t
 The code nevertheless if give only a string to initialise a Creature it will check in both. Disclaimer based on my vague legal knowledge, download the spreadsheet only if you own the MM.
 
 ```
-import DnD_battler as DnD
+import DnD_Battler as DnD
 DnD.Creature("barkskin_bear")  ###A criptic hardcoded creature
 DnD.Creature("hobgoblin")  ##A creature from the beastiary spreadsheet
 ```
