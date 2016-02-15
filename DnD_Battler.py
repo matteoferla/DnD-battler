@@ -987,7 +987,7 @@ class Encounter():
 
         def _random(folk):
             randomized = random.shuffle(folk)
-            return return randomized
+            return randomized
 
         def _weakest(folk):
             return sorted(folk, key=lambda query: query.hp)
