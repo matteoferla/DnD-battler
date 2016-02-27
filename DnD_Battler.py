@@ -11,7 +11,7 @@ TARGET ='enemy alive weakest'
 #target='enemy alive weakest', target='enemy alive random', target='enemy alive fiersomest'
 
 
-__DOC__='''
+__doc__='''
 Welcome to the D&D Battle simulator.
 
 Go to the § HERE IS WHERE YOU CAN DECIDE THE LINE UP if you want to try it out.
@@ -130,6 +130,7 @@ class Dice:
 ######################CREATURE######################
 
 class Creature:
+    @staticmethod
     def _beastiary(path):
         try:
             import csv
@@ -145,7 +146,7 @@ class Creature:
             print('Missing beastiary in'+path)
             return {}
 
-    beastiary=_beastiary('beastiary.csv')  #Class attribute!!
+    beastiary=_beastiary.__func__('beastiary.csv')
 
 
     def __init__(self, wildcard, *args,**kwargs):
@@ -987,7 +988,7 @@ class Encounter():
 
         def _random(folk):
             randomized = random.shuffle(folk)
-            return return randomized
+            return randomized
 
         def _weakest(folk):
             return sorted(folk, key=lambda query: query.hp)
@@ -1054,7 +1055,7 @@ if __name__=="__main__":
     N="\n"
     rounds = 100
 
-    print(Encounter("tarrasque").addmob(150).go_to_war(10))
+    print(Encounter("blink dog").addmob(10).go_to_war(10))
 
     ### KILL PEACEFULLY
     import sys
