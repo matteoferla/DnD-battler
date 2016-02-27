@@ -149,7 +149,7 @@ class Creature:
     beastiary=_beastiary.__func__('beastiary.csv')
 
 
-    def __init__(self, wildcard, *args,**kwargs):
+    def __init__(self, wildcard, *args, **kwargs):
         self.log=""
         if type(wildcard) is str and not args and not kwargs:
             self._fill_from_beastiary(wildcard)
@@ -885,6 +885,11 @@ class Encounter():
     called shot —not an official rule. Turn economy.
     '''
     def predict(self):
+        def safediv(a,b,default=0):
+            try:
+                return a/b
+            except:
+                return default
         def not_us(side):
             (a,b)=list(self.sides)
             if a == side:
@@ -903,14 +908,14 @@ class Encounter():
         for character in self:
             for move in character.attacks:
                 move['damage'].avg=True
-                damage[character.alignment]+= (20+move['attack'].bonus-ac[not_us(character.alignment)])/20*move['damage'].roll()
+                damage[character.alignment]+= safediv((20+move['attack'].bonus-ac[not_us(character.alignment)]),20*move['damage'].roll())
                 move['damage'].avg=False
                 hp[character.alignment]+= character.starting_hp
         (a,b)=list(self.sides)
-        rate={a: hp[a]/damage[b], b: hp[b]/damage[a]}
+        rate={a: safediv(hp[a],damage[b],0.0), b: safediv(hp[b],damage[a],0.0)}
         return ('Rough a priori predictions:'+N+
-                '> '+ a + '= expected rounds to survive: ' + str(round(rate[a],2))+'; crudely normalised: ' + str(round(rate[a]/(rate[a]+rate[b])*100))+ '%'+N+
-                '> '+ b + '= expected rounds to survive: ' + str(round(rate[b],2))+'; crudely normalised: ' + str(round(rate[b]/(rate[a]+rate[b])*100))+ '%'+N)
+                '> '+ str(a) + '= expected rounds to survive: ' + str(round(rate[a],2))+'; crudely normalised: ' + str(round(safediv(rate[a],(rate[a]+rate[b])*100))) + '%'+N +
+                '> '+ str(b) + '= expected rounds to survive: ' + str(round(rate[b],2))+'; crudely normalised: ' + str(round(safediv(rate[b],(rate[a]+rate[b])*100)))+ '%'+N)
 
 
 
@@ -1053,15 +1058,5 @@ def test():
 
 if __name__=="__main__":
     N="\n"
-    rounds = 100
+    print(Encounter(Creature("ancient blue dragon")).addmob(200).go_to_war(10))
 
-    print(Encounter("blink dog").addmob(10).go_to_war(10))
-
-    ### KILL PEACEFULLY
-    import sys
-    sys.exit(0)
-
-    #ANYTHING AFTER THIS WILL BE DISREGARDED
-
-    ###DUMPYARD ###########
-    #CODE HERE MAY BE BROKEN

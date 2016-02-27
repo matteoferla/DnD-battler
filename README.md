@@ -24,3 +24,15 @@ verbosity (verbose=1) is optional.
 There is some code messiness resulting from the unclear distinction between Encounter and Creature object, namely
 a Creature interacting with another is generally a Creature method, while a Creature searching across the list of Creatures in the Encounter is an Encounter method.
 There are one or two approximations that are marked #NOT-RAW. In the Encounter.battle method there are some thought on the action choices.
+
+# Example usage
+```
+import DnD_battler as DnD
+#make creature
+terry=DnD.Creature("tarrasque")  ##A creature from the beastiary spreadsheet
+terry.alignment="good"
+#make encounter (a collection of creatures), which can either be a Creature instance or a string (Creature instance created)
+print(DnD.Encounter(terry,"tarrasque").go_to_war(1000))
+#add commoners
+print(Encounter(Creature("ancient blue dragon")).addmob(200).go_to_war(10))
+```
