@@ -134,7 +134,7 @@ class Creature:
     def _beastiary(path):
         try:
             import csv
-            r=csv.reader(open(path))
+            r=csv.reader(open(path, encoding='utf-8'))
             headers=next(r)
             beastiary={}
             for line in r:
@@ -142,8 +142,8 @@ class Creature:
                 if 'name' in beast:
                     beastiary[beast['name']]=beast
             return beastiary
-        except:
-            print('Missing beastiary in'+path)
+        except Exception as e:
+            print('Beastiary error, expected path '+path+' error '+str(e))
             return {}
 
     beastiary=_beastiary.__func__('beastiary.csv')
@@ -1058,5 +1058,6 @@ def test():
 
 if __name__=="__main__":
     N="\n"
-    print(Encounter(Creature("ancient blue dragon")).addmob(200).go_to_war(10))
+    print(Encounter(Creature("ancient blue dragon")).addmob(200).go_to_war(2))
+
 
