@@ -5,8 +5,7 @@ A 5e D&amp;D encounter simulator written to determine victory probabilities and 
 # New
 The simulator relies on  creature information present in the `beastiary.csv` file. This file was kindly compiled by Jeff Fox.
 It contains all creature present in the D&D 5e SDR and is distributed under the following licence:
-Open Game License v 1.0a Copyright 2000, Wizards of the Coast, Inc. Copyright 2016, Wizards of the Coast, Inc. 
-This f.
+Open Game License v 1.0a Copyright 2000, Wizards of the Coast, Inc. Copyright 2016, Wizards of the Coast, Inc.
 
 #Documentation
 Welcome to the D&D Battle simulator.
