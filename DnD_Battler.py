@@ -240,6 +240,7 @@ class Creature:
             return {}
 
     beastiary = _beastiary.__func__('beastiary.csv')
+    ability_names = ['str', 'dex', 'con', 'wis', 'int', 'cha']
 
     def __init__(self, wildcard, **kwargs):  # I removed *args... not sure what they did.
         """
@@ -251,8 +252,9 @@ class Creature:
         :param kwargs: a lot of arguments...
         :return: a creature.
 
-        The arguments are:
-        *
+        The arguments are many.
+        >>> print(Creature(Creature('aboleth'), ac=20).__dict__)
+        `{'abilities': None, 'dex': 10, 'con_bonus': 10, 'cr': 17, 'xp': 5900, 'ac': 20, 'starting_healing_spells': 0, 'starting_hp': 135, 'condition': 'normal', 'initiative': <__main__.Dice object at 0x1022542e8>, 'str': 10, 'wis': 10, 'ability_bonuses': {'int': 0, 'cha': 0, 'dex': 0, 'con': 0, 'str': 0, 'wis': 0}, 'custom': [], 'hd': <__main__.Dice object at 0x102242c88>, 'hurtful': 36.0, 'tally': {'rounds': 0, 'hp': 0, 'battles': 0, 'hits': 0, 'damage': 0, 'healing_spells': 0, 'dead': 0, 'misses': 0}, 'hp': 135, 'proficiency': 5, 'cha_bonus': 10, 'able': 1, 'healing_spells': 0, 'copy_index': 1, 'int': 10, 'concentrating': 0, 'wis_bonus': 10, 'con': 10, 'int_bonus': 10, 'sc_ab': 'con', 'str_bonus': 10, 'level': 18, 'settings': {}, 'arena': None, 'dex_bonus': 10, 'log': '', 'cha': 10, 'dodge': 0, 'alt_attack': {'attack': None, 'name': None}, 'alignment': 'lawful evil ', 'attacks': [{'attack': <__main__.Dice object at 0x1022545f8>, 'damage': <__main__.Dice object at 0x1022545c0>, 'name': 'tentacle'}, {'attack': <__main__.Dice object at 0x102254668>, 'damage': <__main__.Dice object at 0x102254630>, 'name': 'tentacle'}, {'attack': <__main__.Dice object at 0x1022546d8>, 'damage': <__main__.Dice object at 0x1022546a0>, 'name': 'tentacle'}], 'attack_parameters': [['tentacle', 9, 5, 6, 6], ['tentacle', 9, 5, 6, 6], ['tentacle', 9, 5, 6, 6]], 'buff_spells': 0, 'temp': 0, 'name': 'aboleth'}`
         """
         self.log = ""
         if not kwargs and type(wildcard) is str:
@@ -292,7 +294,7 @@ class Creature:
         8. AC (`self.ac`)
         9. spellcasting (complex, may change in future): `sc_ab` the spellcasting ability as three char str,
         10. `initiative_bonus`
-        11. combat stats
+        11. combat stats... attack_parameters=[['rapier', 4, 2, 8]], alt_attack=['net', 4, 0, 0]
 
         name, alignment="good", ac=10, initiative_bonus=None, hp=None, attack_parameters=[['club', 2, 0, 4]],
                  alt_attack=['none', 0],
@@ -301,7 +303,7 @@ class Creature:
                  """
 
         if settings:
-            self.settings = settings
+            self.settings = Creature.clean_settings(settings)
         else:
             self._fill_from_preset('commoner')  # or Cthulhu?
             print("EMPTY CREATURE GIVEN. SETTING TO COMMONER")
@@ -310,13 +312,19 @@ class Creature:
         # Mod of preexisting
         if 'base' in self.settings:
             if type(self.settings['base']) is str:
-                victim = Creature(self.settings['base'])  # generate a preset and get its attributes. Seems a bit wasteful.
+                victim = Creature(
+                    self.settings['base'])  # generate a preset and get its attributes. Seems a bit wasteful.
             elif type(self.settings['base']) is Creature:
                 victim = self.settings['base']
             else:
                 raise TypeError
-            base = {x: getattr(victim, x) for x in dir(victim) if getattr(victim, x)}
-            base.update(**self.settings)
+            base = {x: getattr(victim, x) for x in dir(victim) if getattr(victim, x) and x.find("__") == -1 and x.find("_") != 0 and x != 'beastiary'}
+            #base.update(**self.settings)
+            for (k,v) in self.settings.items():
+                if type(v) is dict:
+                    base[k].update(v)
+                else:
+                    base[k] = v
             self.settings = base
 
         # Name etc.
@@ -463,6 +471,43 @@ class Creature:
                 self._set(other)
 
         self.arena = None
+        self.settings = {}
+
+    @staticmethod
+    def clean_settings(dirtydex):
+        """
+        Sanify the settings
+        :return:
+        """
+        #lowercase
+        lowerdex = {k.lower(): dirtydex[k] for k in dirtydex}
+
+        #sort issue with abilities
+        cleandex = {'abilities':{}, 'ability_bonuses': {}}
+        ##dicts present
+        if 'abilities' in lowerdex:
+            if type(lowerdex['abilities']) is dict:
+                cleandex['abilities'] = lowerdex['abilities']
+            else:
+                raise TypeError("List for abilities is no longer supported. Use dictionary")
+        if 'abilities' in lowerdex:
+            if type(lowerdex['abilities']) is dict:
+                cleandex['abilities'] = lowerdex['abilities']
+            else:
+                raise TypeError("List for abilities is no longer supported. Use dictionary")
+        # individual abilities overwrite
+        for k in lowerdex:
+            if k in ['str', 'dex', 'con', 'wis', 'int', 'cha']:
+                cleandex['abilities'][k[0:3]] = int(lowerdex[k])
+                if 'ab_'+k not in lowerdex:
+                    cleandex['abilities'][k[0:3]] = math.floor(int(lowerdex[k])/2-5)
+            elif k in ['ab_str', 'ab_dex', 'ab_con', 'ab_wis', 'ab_int', 'ab_cha']:
+                cleandex['ability_bonuses'][k[3:6]] = int(lowerdex[k])
+                if k[0:3] not in lowerdex:
+                    cleandex['abilities'][k[0:3]] = int(lowerdex[k])*2+10
+            else:
+                cleandex[k] = lowerdex[k]
+        return cleandex
 
     def _set(self, item, alt=None, expected_type='string'):
         """
@@ -481,55 +526,19 @@ class Creature:
             setattr(self, item, alt)
 
     def _initialise_abilities(self):
-        self.able = 1  # has abilities. if nothing at all is provided it goes to zero.
-        # Abilities. (self.str overides) self.abilities which overides .ability_bonuses (which overides .str_bonus)
-        # .str and co. and str_bonus are not to be used.
-        sextet = ['str', 'dex', 'con', 'wis', 'int', 'cha']
-        ##depracated bit
-        for ab in sextet:
-            if ab in self.settings.keys():
-                print('Please group abilities in the dictionary abilities next time')
-                if not 'abilities' in self.settings.keys():
-                    self.settings['abilities'] = {}
-                self.settings['abilities'][ab] = self.settings[ab]
-            if ab + "_bonus" in self.settings.keys():
-                print('Please group ability_bonuses in the dictionary ability_bonuses next time')
-                if not 'ability_bonuses' in self.settings.keys():
-                    self.settings['ability_bonuses'] = {}
-                self.settings['ability_bonuses'][ab] = self.settings[ab + '_bonus']
-        # nice bit.
-        if 'abilities' in self.settings.keys():
-            if isinstance(self.settings['abilities'], list):
-                self.abilities = {y: int(x) for x, y in zip(self.settings['abilities'], sextet)}
-            elif isinstance(self.settings['abilities'], dict):
-                self.abilities = {'str': 10, 'dex': 10, 'con': 10, 'wis': 10, 'int': 10, 'cha': 10}
-                self.abilities.update(self.settings['abilities'])
-            else:
-                raise NameError('abilities can be a list of six, or a incomplete dictionary')
-            for ab in sextet:
-                setattr(self, ab, self.abilities[ab])  # Depracated attr
-        else:
-            self.abilities = None
-        #AB
-        if 'ability_bonuses' in self.settings.keys():
-            if isinstance(self.settings['ability_bonuses'], list):
-                self.ability_bonuses = {y: int(x) for x, y in zip(self.settings['ability_bonuses'], sextet)}
-            elif isinstance(self.settings['ability_bonuses'], dict):
-                self.ability_bonuses = {'str': 0, 'dex': 0, 'con': 0, 'wis': 0, 'int': 0, 'cha': 0}
-                self.ability_bonuses.update(self.settings['ability_bonuses'])
-            else:
-                raise NameError('ability_bonuses can be a list of six, or a incomplete dictionary')
-            for ab in sextet:
-                if not ab in self.settings.keys():
-                    setattr(self, ab, self.ability_bonuses[ab] * 2 + 10)
-                else:
-                    setattr(self, ab, self.settings[ab])
-                setattr(self, ab + "_bonus", getattr(self, ab))  # depracated attr
-        elif self.abilities:  ##not null
-            setattr(self, 'ability_bonuses', [math.floor(self.abilities[ab] / 2 - 5) for ab in sextet])
-        else:
-            self.able = 0
-            self.ability_bonuses = {'str': 0, 'dex': 0, 'con': 0, 'wis': 0, 'int': 0, 'cha': 0}
+        """
+        Rewritten so that cleaning module does the cleaning.
+        :return: None.
+        """
+        self.able = 1  # has abilities. if nothing at all is provided it goes to zero. This is for rocks...
+        # set blanks
+        self.ability_bonuses = {n: 0 for n in self.ability_names}
+        self.abilities = {n: 10 for n in self.ability_names}
+        for ability in self.settings['abilities']:
+            self.abilities[ability] = int(self.settings['abilities'][ability])
+            self.ability_bonuses[ability] = math.floor(int(self.settings['abilities'][ability])/2-5)
+        for ability in self.settings['ability_bonuses']:
+            self.ability_bonuses[ability] = self.settings['ability_bonuses'][ability]
 
     def _fill_from_dict(self, dictionary):
         return self._initialise(**dictionary)
@@ -1228,8 +1237,16 @@ def test():
         print(str(int(max)) + " commoners: " + str(wwe.tally['victories']['good']))
         print(ted.hp)
 
+def creature_check(who= 'commoner'):
+    print('Ability bonus...')
+    print('Beastiary: ',{x: Creature.beastiary[who][x] for x in 'AB_Str AB_Int AB_Con AB_Cha AB_Dex AB_Wis'.split()})
+    print('Instance: ',Creature(who).ability_bonuses)
+    print('Mod: ',Creature(who,str=999).ability_bonuses)
+
 
 if __name__ == "__main__":
     N = "\n"
     # print(Encounter(Creature("ancient blue dragon")).addmob(200).go_to_war(2))
-    print(Creature(Creature('aboleth'), ac=20).__dict__)
+
+    creature_check('aboleth')
+
