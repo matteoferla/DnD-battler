@@ -218,7 +218,7 @@ class Creature:
         * log
         * proficiency
         * initiative_bonus
-        * AB_Str
+        * AB_Str   -- as in ability bonus.
         * AB_Dex
         * AB_Con
         * AB_Int
@@ -243,7 +243,7 @@ class Creature:
 
     def __init__(self, wildcard, **kwargs):  # I removed *args... not sure what they did.
         """
-        Creature object creation. A lot of paramaters make a creature so a lot of assumptions are made.
+        Creature object creation. A lot of paramaters make a creature so a lot of assumptions are made (see __init__`).
         :param wildcard: the name of the creature.
           If nothing else is passed it will take it from the beastiary.
           If a dictionary is passed, it will process it like **kwargs,
@@ -274,33 +274,52 @@ class Creature:
             print("I will not raise an error. I will raise Cthulhu to punish this user errors")
             self._fill_from_preset("cthulhu")
 
-    def _initialise(self, **kwargs):
-        """
+    def _initialise(self, **settings):
+        """`
+        Preface.
+        Character creation in DnD is rather painful. Here due to missing it is even more complex.
+        Also, creature, character and monster are used interchangably here unfortunately, which will be fixed one day.
+        The method _set
+
+        This is the order of creation. All attributes are in lowercase regardless of the style on the PHB.
+        1. a creature can be based off another, if the `base attribute is set`(str or Creature).
+        2. set `name`
+        3. set `level` (def 1)
+        4. set `xp` (def None)
+        5. set `proficiency` (proficiency bonus), 1 + round(self.level / 4) if absent, but will be overidden if hp is not specified as the `set_level` will generate it from HD and level
+        6. set ability bonues (`_initialise_abilities` method). To let the user give a base creature and weak a single ability (__e.g.__ `Creature('Commoner',name='mutant commoner', str=20)), the creature has abilities as individual attributes with three letter codes, __e.g.__ `self.str` and as a dictionary (`self.abilities`), while `self.ability_bonuses` has a twin that is the suffix `_bonus` (__e.g.__ `self.str_bonus`).
+        7. set `hp`
+        8. AC (`self.ac`)
+        9. spellcasting (complex, may change in future): `sc_ab` the spellcasting ability as three char str,
+        10. `initiative_bonus`
+        11. combat stats
+
         name, alignment="good", ac=10, initiative_bonus=None, hp=None, attack_parameters=[['club', 2, 0, 4]],
                  alt_attack=['none', 0],
                  healing_spells=0, healing_dice=4, healing_bonus=None, ability_bonuses=[0, 0, 0, 0, 0, 0], sc_ability='wis',
                  buff='cast_nothing', buff_spells=0, log=None, xp=0, hd=6, level=1, proficiency=2
                  """
 
-        if kwargs:
-            self.kwargs = kwargs  # This is just to store them, just in case. self._initialise_abilities
+        if settings:
+            self.settings = settings
         else:
             self._fill_from_preset('commoner')  # or Cthulhu?
             print("EMPTY CREATURE GIVEN. SETTING TO COMMONER")
             return 0
 
         # Mod of preexisting
-        if 'base' in kwargs:
-            if type(kwargs['base']) is str:
-                victim = Creature(kwargs['base'])  # generate a preset and get its attributes. Seems a bit wasteful.
-            elif type(kwargs['base']) is Creature:
-                victim = kwargs['base']
+        if 'base' in self.settings:
+            if type(self.settings['base']) is str:
+                victim = Creature(self.settings['base'])  # generate a preset and get its attributes. Seems a bit wasteful.
+            elif type(self.settings['base']) is Creature:
+                victim = self.settings['base']
             else:
                 raise TypeError
             base = {x: getattr(victim, x) for x in dir(victim) if getattr(victim, x)}
-            base.update(**kwargs)
-            kwargs = base
+            base.update(**self.settings)
+            self.settings = base
 
+        # Name etc.
         self._set('name', 'nameless')
         self._set('level', 1, 'int')
         self._set('xp', None, 'int')
@@ -308,21 +327,24 @@ class Creature:
         # proficiency. Will be overridden if not hp is provided.
         self._set('proficiency', 1 + round(self.level / 4))  # TODO check maths on PH
 
-        self._initialise_abilities(**kwargs)
+        # set abilities
+        self._initialise_abilities()
 
+        # Get HD
         self.hd = None
-        if 'hd' in kwargs.keys():
-            if type(kwargs['hd']) is Dice:
-                self.hd = kwargs['hd']  # we're dealing with a copy of a beastiary obj.
+        if 'hd' in self.settings.keys():
+            if type(self.settings['hd']) is Dice:
+                self.hd = self.settings['hd']  # we're dealing with a copy of a beastiary obj.
             else:
-                self.hd = Dice(self.ability_bonuses['con'], int(kwargs['hd']), avg=True, role="hd")
-        elif 'size' in kwargs.keys():
+                self.hd = Dice(self.ability_bonuses['con'], int(self.settings['hd']), avg=True, role="hd")
+        elif 'size' in self.settings.keys():
             size_cat = {"small": 6, "medium": 8, "large": 10, "huge": 12}
-            if kwargs['size'] in size_cat.keys():
-                self.hd = Dice(self.ability_bonuses['con'], size_cat[kwargs['size']], avg=True, role="hd")
+            if self.settings['size'] in size_cat.keys():
+                self.hd = Dice(self.ability_bonuses['con'], size_cat[self.settings['size']], avg=True, role="hd")
 
-        if 'hp' in kwargs.keys():
-            self.hp = int(kwargs['hp'])
+        # Get HP
+        if 'hp' in self.settings.keys():
+            self.hp = int(self.settings['hp'])
             self.starting_hp = self.hp
         elif self.hd:
             self.set_level()
@@ -330,55 +352,56 @@ class Creature:
             raise Exception('Cannot make character without hp or hd + level provided')
 
         # AC
-        if not 'ac' in kwargs.keys():
-            kwargs['ac'] = 10 + self.ability_bonuses['dex']
-        self.ac = int(kwargs['ac'])
+        if not 'ac' in self.settings.keys():
+            self.settings['ac'] = 10 + self.ability_bonuses['dex']
+        self.ac = int(self.settings['ac'])
 
         # init
-        if not 'initiative_bonus' in kwargs:
-            kwargs['initiative_bonus'] = self.ability_bonuses['dex']
-        self.initiative = Dice(int(kwargs['initiative_bonus']), 20, role="initiative")
+        if not 'initiative_bonus' in self.settings:
+            self.settings['initiative_bonus'] = self.ability_bonuses['dex']
+        self.initiative = Dice(int(self.settings['initiative_bonus']), 20, role="initiative")
+
         ##spell casting ability_bonuses
-        if 'sc_ability' in kwargs:
-            self.sc_ab = kwargs['sc_ability'].lower()
-        elif 'healing_spells' in kwargs or 'buff_spells' in kwargs:
+        if 'sc_ability' in self.settings:
+            self.sc_ab = self.settings['sc_ability'].lower()
+        elif 'healing_spells' in self.settings or 'buff_spells' in self.settings:
             self.sc_ab = max('wis', 'int', 'cha',
                              key=lambda ab: self.ability_bonuses[ab])  # Going for highest. seriously?!
             print(
                 "Please specify spellcasting ability of " + self.name + " next time, this time " + self.sc_ab + " was used as it was biggest.")
         else:
             self.sc_ab = 'con'  # TODO fix this botch up.
-
-        if not 'healing_bonus' in kwargs:
-            kwargs['healing_bonus'] = self.ability_bonuses[self.sc_ab]
-        if 'healing_spells' in kwargs:
-            self.starting_healing_spells = int(kwargs['healing_spells'])
+        if not 'healing_bonus' in self.settings:
+            self.settings['healing_bonus'] = self.ability_bonuses[self.sc_ab]
+        if 'healing_spells' in self.settings:
+            self.starting_healing_spells = int(self.settings['healing_spells'])
             self.healing_spells = self.starting_healing_spells
-            if not 'healing_dice' in kwargs:
-                kwargs['healing_dice'] = 4  # healing word.
-            self.healing = Dice(int(kwargs['healing_bonus']), int(kwargs['healing_dice']),
+            if not 'healing_dice' in self.settings:
+                self.settings['healing_dice'] = 4  # healing word.
+            self.healing = Dice(int(self.settings['healing_bonus']), int(self.settings['healing_dice']),
                                 role="healing")  ##Healing dice can't crit or have adv.
         else:
             self.starting_healing_spells = 0
             self.healing_spells = 0
             # not a healer
 
+        # attacks
         self.attacks = []
         self.hurtful = 0
-        if not 'attack_parameters' in kwargs:
+        if not 'attack_parameters' in self.settings:
             # Benefit of doubt. Given 'em a dagger .
-            kwargs['attack_parameters'] = 'dagger'
-        if type(kwargs['attack_parameters']) is str:
+            self.settings['attack_parameters'] = 'dagger'
+        if type(self.settings['attack_parameters']) is str:
             try:
                 import json
-                x = json.loads(kwargs['attack_parameters'].replace("*", "\""))
+                x = json.loads(self.settings['attack_parameters'].replace("*", "\""))
                 self._attack_parse(x)
                 self.attack_parameters = x
             except:
                 weapons = {'club': 6, 'dagger': 4, 'shortsword': 6, 'longsword': 8, 'bastardsword': 10,
                            'greatsword': 12, 'rapier': 8, 'scimitar': 6}
                 for w in weapons.keys():
-                    if kwargs['attack_parameters'].lower().find(w) > -1:
+                    if self.settings['attack_parameters'].lower().find(w) > -1:
                         # TODO fix the fact that a it gives the finesse option to all. Add more.
                         chosen_ab = self.ability_bonuses[max('str', 'dex', key=lambda ab: self.ability_bonuses[ab])]
                         self.attack_parameters = [[w, self.proficiency + chosen_ab, chosen_ab, weapons[w]]]
@@ -386,23 +409,23 @@ class Creature:
                         self.log += "Weapon matched by str to " + w + N
                         break
                 else:
-                    raise Exception("Cannot figure out what is: " + kwargs['attack_parameters'] + str(
-                        type(kwargs['attack_parameters'])))
-        elif type(kwargs['attack_parameters']) is list:
-            self.attack_parameters = kwargs['attack_parameters']
+                    raise Exception("Cannot figure out what is: " + self.settings['attack_parameters'] + str(
+                        type(self.settings['attack_parameters'])))
+        elif type(self.settings['attack_parameters']) is list:
+            self.attack_parameters = self.settings['attack_parameters']
             self._attack_parse(self.attack_parameters)
         else:
             raise Exception('Could not determine weapon')
         ##Weird bit needing upgrade.
-        if 'alt_attack' in kwargs and type(kwargs['alt_attack']) is list:
-            self.alt_attack = {'name': kwargs['alt_attack'][0],
-                               'attack': Dice(kwargs['alt_attack'][1], 20)}  # CURRENTLY ONLY NETTING IS OPTION!
+        if 'alt_attack' in self.settings and type(self.settings['alt_attack']) is list:
+            self.alt_attack = {'name': self.settings['alt_attack'][0],
+                               'attack': Dice(self.settings['alt_attack'][1], 20)}  # CURRENTLY ONLY NETTING IS OPTION!
         else:
             self.alt_attack = {'name': None, 'attack': None}
         # last but not least
-        if 'alignment' not in kwargs:
-            kwargs['alignment'] = "unassigned mercenaries"  # hahaha!
-        self.alignment = kwargs['alignment']
+        if 'alignment' not in self.settings:
+            self.settings['alignment'] = "unassigned mercenaries"  # hahaha!
+        self.alignment = self.settings['alignment']
         # internal stuff
         self.tally = {'damage': 0, 'hits': 0, 'dead': 0, 'misses': 0, 'battles': 0, 'rounds': 0, 'hp': 0,
                       'healing_spells': 0}
@@ -414,18 +437,18 @@ class Creature:
         self.temp = 0
 
         self.buff_spells = None
-        if 'buff_spells' in kwargs:
-            self.buff_spells = int(kwargs['buff_spells'])
-            self.conc_fx = getattr(self, kwargs['buff'])
+        if 'buff_spells' in self.settings:
+            self.buff_spells = int(self.settings['buff_spells'])
+            self.conc_fx = getattr(self, self.settings['buff'])
         else:
             self.buff_spells = 0
 
-        if 'cr' in kwargs:
-            self.cr = kwargs['cr']
-        elif 'level' in kwargs:
+        if 'cr' in self.settings:
+            self.cr = self.settings['cr']
+        elif 'level' in self.settings:
             # TODO check maths on MM.
-            if int(kwargs['level']) > 1:
-                self.cr = int(kwargs['level']) - 1
+            if int(self.settings['level']) > 1:
+                self.cr = int(self.settings['level']) - 1
             else:
                 self.cr = 0.5
         else:
@@ -435,65 +458,72 @@ class Creature:
         self._set('custom', [])
         for other in self.custom:
             if other == "conc_fx":
-                getattr(self, kwargs['conc_fx'])
+                getattr(self, self.settings['conc_fx'])
             else:
                 self._set(other)
 
         self.arena = None
 
-    def _set(self, item, alt=None, type='string'):
-        if item in self.kwargs:
-            if type == 'string':
-                setattr(self, item, self.kwargs[item])
-            elif type == 'int':
-                setattr(self, item, int(self.kwargs[item]))
+    def _set(self, item, alt=None, expected_type='string'):
+        """
+        Method to set the attribute named item based on that in self.settings if present, if not it uses alt value.
+        :param item: the name of the self.settings key and attribute of self to set.
+        :param alt: default value
+        :param expected_type: "string" or "int" for now. Can be easily changed for other types.
+        :return: None.
+        """
+        if item in self.settings:
+            if expected_type == 'string':
+                setattr(self, item, self.settings[item])
+            elif expected_type == 'int':
+                setattr(self, item, int(self.settings[item]))
         else:
             setattr(self, item, alt)
 
-    def _initialise_abilities(self, **kwargs):
+    def _initialise_abilities(self):
         self.able = 1  # has abilities. if nothing at all is provided it goes to zero.
         # Abilities. (self.str overides) self.abilities which overides .ability_bonuses (which overides .str_bonus)
         # .str and co. and str_bonus are not to be used.
         sextet = ['str', 'dex', 'con', 'wis', 'int', 'cha']
         ##depracated bit
         for ab in sextet:
-            if ab in kwargs.keys():
+            if ab in self.settings.keys():
                 print('Please group abilities in the dictionary abilities next time')
-                if not 'abilities' in kwargs.keys():
-                    kwargs['abilities'] = {}
-                kwargs['abilities'][ab] = kwargs[ab]
-            if ab + "_bonus" in kwargs.keys():
+                if not 'abilities' in self.settings.keys():
+                    self.settings['abilities'] = {}
+                self.settings['abilities'][ab] = self.settings[ab]
+            if ab + "_bonus" in self.settings.keys():
                 print('Please group ability_bonuses in the dictionary ability_bonuses next time')
-                if not 'ability_bonuses' in kwargs.keys():
-                    kwargs['ability_bonuses'] = {}
-                kwargs['ability_bonuses'][ab] = kwargs[ab + '_bonus']
+                if not 'ability_bonuses' in self.settings.keys():
+                    self.settings['ability_bonuses'] = {}
+                self.settings['ability_bonuses'][ab] = self.settings[ab + '_bonus']
         # nice bit.
-        if 'abilities' in kwargs.keys():
-            if isinstance(kwargs['abilities'], list):
-                self.abilities = {y: int(x) for x, y in zip(kwargs['abilities'], sextet)}
-            elif isinstance(kwargs['abilities'], dict):
+        if 'abilities' in self.settings.keys():
+            if isinstance(self.settings['abilities'], list):
+                self.abilities = {y: int(x) for x, y in zip(self.settings['abilities'], sextet)}
+            elif isinstance(self.settings['abilities'], dict):
                 self.abilities = {'str': 10, 'dex': 10, 'con': 10, 'wis': 10, 'int': 10, 'cha': 10}
-                self.abilities.update(kwargs['abilities'])
+                self.abilities.update(self.settings['abilities'])
             else:
                 raise NameError('abilities can be a list of six, or a incomplete dictionary')
             for ab in sextet:
                 setattr(self, ab, self.abilities[ab])  # Depracated attr
         else:
             self.abilities = None
-
-        if 'ability_bonuses' in kwargs.keys():
-            if isinstance(kwargs['ability_bonuses'], list):
-                self.ability_bonuses = {y: int(x) for x, y in zip(kwargs['ability_bonuses'], sextet)}
-            elif isinstance(kwargs['ability_bonuses'], dict):
+        #AB
+        if 'ability_bonuses' in self.settings.keys():
+            if isinstance(self.settings['ability_bonuses'], list):
+                self.ability_bonuses = {y: int(x) for x, y in zip(self.settings['ability_bonuses'], sextet)}
+            elif isinstance(self.settings['ability_bonuses'], dict):
                 self.ability_bonuses = {'str': 0, 'dex': 0, 'con': 0, 'wis': 0, 'int': 0, 'cha': 0}
-                self.ability_bonuses.update(kwargs['ability_bonuses'])
+                self.ability_bonuses.update(self.settings['ability_bonuses'])
             else:
                 raise NameError('ability_bonuses can be a list of six, or a incomplete dictionary')
             for ab in sextet:
-                if not ab in kwargs.keys():
+                if not ab in self.settings.keys():
                     setattr(self, ab, self.ability_bonuses[ab] * 2 + 10)
                 else:
-                    setattr(self, ab, kwargs[ab])
+                    setattr(self, ab, self.settings[ab])
                 setattr(self, ab + "_bonus", getattr(self, ab))  # depracated attr
         elif self.abilities:  ##not null
             setattr(self, 'ability_bonuses', [math.floor(self.abilities[ab] / 2 - 5) for ab in sextet])
