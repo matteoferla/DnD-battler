@@ -1,6 +1,6 @@
-# DnD-battler
-Welcome to the D&D Battle simulator.
-A 5e D&amp;D encounter simulator written to determine victory probabilities and to test some hypotheses.
+# DnD Encounter simulator
+Welcome to the D&D 5e Encounter simulator.
+It was written to determine victory probabilities and to test some hypotheses.
 [An online version of the simulator is hosted in Openshift](http://battle-matteoferla.rhcloud.com)
 
 # New
@@ -21,7 +21,7 @@ The muchkinishness has a deleterious side-effect when the method deathmatch of t
 **Actions.** Action choice is dictated by turn economy. A character of a team with the greater turn economy will dodge (if it knows itself a target) or throw a net (if it has one), and so forth while a creature on the oppose side will opt for a slugfest.
 
 ```
->>> import DnD_Battler as DnD   #Note that the DnD_Battler file name will be fixed one day.
+>>> import DnD
 >>> DnD.Creature('aboleth') # get from beastiary
 >>> level1 = DnD.Creature("buff peseant",base='commoner',abilities = {'str': 15,'dex': 14,'con':13,'int':12,'wis':10,'cha': 8}, alignment ="good", attack_parameters='longsword') #a modified creature based off another
 >>> terry=DnD.Creature("lich")
