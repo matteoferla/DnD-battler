@@ -479,25 +479,24 @@ class Creature:
         Sanify the settings
         :return:
         """
+        ability_names=['str', 'dex', 'con', 'wis', 'int', 'cha']
         #lowercase
         lowerdex = {k.lower(): dirtydex[k] for k in dirtydex}
 
         #sort issue with abilities
         cleandex = {'abilities':{}, 'ability_bonuses': {}}
         ##dicts present
-        if 'abilities' in lowerdex:
-            if type(lowerdex['abilities']) is dict:
-                cleandex['abilities'] = lowerdex['abilities']
-            else:
-                raise TypeError("List for abilities is no longer supported. Use dictionary")
-        if 'abilities' in lowerdex:
-            if type(lowerdex['abilities']) is dict:
-                cleandex['abilities'] = lowerdex['abilities']
-            else:
-                raise TypeError("List for abilities is no longer supported. Use dictionary")
+        for grouping in ['abilities','ability_bonuses']:
+            if grouping in lowerdex:
+                if type(lowerdex[grouping]) is dict:
+                    cleandex[grouping] = lowerdex[grouping]
+                elif type(lowerdex[grouping]) is list and len(lowerdex[grouping]) == 6:
+                    cleandex[grouping] = {ability_names[i]: lowerdex[grouping][i] for i in range(0,6)}
+                else:
+                    raise TypeError("Cannot parse "+grouping)
         # individual abilities overwrite
         for k in lowerdex:
-            if k in ['str', 'dex', 'con', 'wis', 'int', 'cha']:
+            if k in ability_names:
                 cleandex['abilities'][k[0:3]] = int(lowerdex[k])
                 if 'ab_'+k not in lowerdex:
                     cleandex['abilities'][k[0:3]] = math.floor(int(lowerdex[k])/2-5)
@@ -640,13 +639,13 @@ class Creature:
                              attack_parameters=[['tail', 7, 4, 6, 6, 6, 6]],
                              log="CR 3 700 XP")
 
-        elif name == "barbarian":
+        elif name == "my barbarian":
             self._initialise(name="Barbarian",
                              ac=18, hp=66, alignment="good",
                              attack_parameters=[['greatsword', 4, 1, 6, 6], ['frenzy greatsword', 4, 1, 6, 6]],
                              log="hp is doubled due to resistance")
 
-        elif name == "druid":
+        elif name == "my druid":
             self._initialise(name="Twice Brown Bear Druid",
                              hp=86, ac=11, alignment="good",
                              attack_parameters=[['claw', 5, 4, 8], ['bite', 5, 4, 6, 6]],
@@ -741,10 +740,7 @@ class Creature:
         :return: a copy of the creature.
         """
         self.copy_index += 1
-        return Creature(name=self.name + ' ' + str(self.copy_index), alignment=self.alignment, ac=self.ac,
-                        initiative_bonus=self.initiative.bonus, hp=self.hp, attack_parameters=self.attack_parameters,
-                        healing_spells=self.healing_spells, healing_dice=self.healing.dice[0],
-                        healing_bonus=self.healing.bonus)
+        return Creature(self, name=self.name + ' ' + str(self.copy_index))
 
     def _attack_parse(self, attack_parameters):
         if type(attack_parameters) is str:
@@ -1243,10 +1239,17 @@ def creature_check(who= 'commoner'):
     print('Instance: ',Creature(who).ability_bonuses)
     print('Mod: ',Creature(who,str=999).ability_bonuses)
 
+def cr_test():
+    level1 = Creature('commoner',abilities = {'str': 15,'dex': 14,'con':13,'int':12,'wis':10,'cha': 8}, alignment ="good", attack_parameters='longsword')
+    #cr1 = 'animated armor'
+    #cr05 = 'brown bear'
+    cr1 = 'black bear'
+    #cr1 = 'awakened tree'
+    print(Encounter(level1.copy(),level1.copy(),level1.copy(),level1.copy(),Creature(cr1)).go_to_war())
+    print(Encounter(level1.copy(),level1.copy(),level1.copy(),level1.copy(),Creature(cr1),Creature(cr1)).go_to_war())
 
 if __name__ == "__main__":
     N = "\n"
-    # print(Encounter(Creature("ancient blue dragon")).addmob(200).go_to_war(2))
-
-    creature_check('aboleth')
-
+    #print(Encounter(Creature("ancient blue dragon")).addmob(200).go_to_war(2))
+    #creature_check('aboleth')
+    print(Encounter('my druid','my barbarian','mega_tank', "netsharpshooter",'young black dragon').go_to_war())
