@@ -814,10 +814,19 @@ class Creature:
         # there should be a few more.
         # conditions.
 
-    def reset(self):
+    def reset(self, hard = False):
+        """
+        Resets the creature back to health (a long rest). a hard reset resets its scores
+        :param hard: bool, false keeps tallies
+        :return: None
+        """
         self.hp = self.starting_hp
-        if self.concentrating: self.conc_fx()
+        if self.concentrating:
+            self.conc_fx() #TODO this looks fishy
         self.healing_spells = self.starting_healing_spells
+        if hard:
+            self.tally={'damage': 0,'hp': 0, 'hits': 0,'misses': 0,'rounds': 0,'healing_spells': 0,'battles': 0,'dead':0}
+
 
     def check_advantage(self, opponent):
         adv = 0
@@ -1028,21 +1037,25 @@ class Encounter:
         self.combattants = []
         for chap in lineup:
             self.append(chap)
-        self.check()
+        self.blank()
 
-    def check(self):
-        # TODO Should keep originals if present
+    def blank(self, hard=True):
+        # this resets the teams
         self.sides = set([dude.alignment for dude in self])
+        self.tally['battles'] = 0
+        self.tally['rounds'] = 0
         self.tally['perfect'] = {side: 0 for side in self.sides}
         self.tally['close'] = {side: 0 for side in self.sides}
         self.tally['victories'] = {side: 0 for side in self.sides}
+        self.reset(hard)
+
 
     def append(self, newbie):
         if not type(newbie) is Creature:
             newbie = Creature(newbie)  # Is this safe??
         self.combattants.append(newbie)
         newbie.arena = self
-        self.check()
+        self.blank()
 
     def extend(self, iterable):
         for x in iterable:
@@ -1050,7 +1063,12 @@ class Encounter:
         return self
 
     def addmob(self, n):
-        for x in range(n):
+        """
+        Adds _n_ commoners to the battle
+        :param n: number of commoners
+        :return: self
+        """
+        for x in range(int(n)):
             self.append("commoner")
         return self
 
@@ -1093,8 +1111,13 @@ class Encounter:
 
     def __add__(self, other):
         if type(other) is str:
-            other = Creature.preset(other)
-        self.extend(other)
+            self.append(Creature(other))
+        elif type(other) is Creature:
+            self.append(other)
+        elif type(other) is Encounter:
+            self.extend(other.combattants)
+        else:
+            raise TypeError('Unsupported type '+str(type(other)))
 
     def __iter__(self):
         return iter(self.combattants)
@@ -1105,10 +1128,29 @@ class Encounter:
                 return character
         raise Exception('Nobody by this name')
 
-    def reset(self):
+    def reset(self, hard=False):
         for schmuck in self.combattants:
-            schmuck.reset()
+            schmuck.reset(hard)
         return self
+
+    def remove(self,moriturus):
+        """
+        Removes a creature and resets and rechecks
+        :param moriturus: The creature name to be dropped
+        :return: self
+        """
+        if type(moriturus) is str:
+            for chap in self.combattants:
+                if chap.name == moriturus:
+                    self.combattants.remove(chap)
+                    break
+            else:
+                raise ValueError(moriturus+' not found in Encounter among '+"; ".join([chap.name for chap in self.combattants]))
+        elif type(moriturus) is Creature:
+            self.combattants.remove(moriturus)
+        self.blank()
+
+
 
     def set_deathmatch(self):
         colours = 'red blue green orange yellow lime cyan violet ultraviolet pink brown black white octarine teal magenta blue-green fuchsia purple cream grey'.split(
@@ -1308,5 +1350,4 @@ def creature_check(who= 'commoner'):
 
 
 if __name__ == "__main__":
-    N = "\n"
-    #print(Encounter('my druid','my barbarian','mega_tank', "netsharpshooter",'stone giant').go_to_war())
+    pass

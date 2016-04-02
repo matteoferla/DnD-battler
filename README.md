@@ -221,7 +221,7 @@ append(self, newbie)
 
 battle(self, reset=1, verbose=1)
 
-check(self)
+blank(self)
 
 extend(self, iterable)
 
