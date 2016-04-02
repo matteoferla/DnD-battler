@@ -347,7 +347,7 @@ class Creature:
 
         # Name etc.
         self._set('name', 'nameless')
-        self._set('level', 1, 'int')
+        self._set('level', 0, 'int')
         self._set('xp', None, 'int')
 
         # proficiency. Will be overridden if not hp is provided.
@@ -367,12 +367,21 @@ class Creature:
             size_cat = {"small": 6, "medium": 8, "large": 10, "huge": 12}
             if self.settings['size'] in size_cat.keys():
                 self.hd = Dice(self.ability_bonuses['con'], size_cat[self.settings['size']], avg=True, role="hd")
+        elif 'hp' in self.settings and 'level' in self.settings:
+            #Guess based on hp and level. It is not that dodgy really as the manual does not use odd dice.
+            options = {x: (int(self.settings['hp']) - x - self.ability_bonuses['con'])/(self.settings['level'] -1) - self.ability_bonuses['con'] for x in range(4,13,2)}
+            warnings.warn('Unfinished case. so Defaulting hit dice to d8 instead') #TODO finish
+            self.hd = Dice(self.ability_bonuses['con'], 8, avg=True, role="hd")
+        else:
+            #defaulting to d8
+            warnings.warn('Defaulting hit dice to d8')
+            self.hd = Dice(self.ability_bonuses['con'], 8, avg=True, role="hd")
 
         # Get HP
         if 'hp' in self.settings.keys():
             self.hp = int(self.settings['hp'])
             self.starting_hp = self.hp
-        elif self.hd:
+        elif self.settings['level']:
             self.set_level()
         else:
             raise Exception('Cannot make character without hp or hd + level provided')
@@ -576,7 +585,7 @@ class Creature:
         if name == "netsharpshooter":
             self._initialise(name="netsharpshooter",
                              alignment="good",
-                             hp=18, ac=18,
+                             hp=18, ac=18, hd = 8,
                              initiative_bonus=2,
                              healing_spells=6, healing_bonus=3, healing_dice=4, sc_ability="cha",
                              attack_parameters=[['rapier', 4, 2, 8]], alt_attack=['net', 4, 0, 0], level=3)
@@ -585,19 +594,19 @@ class Creature:
                              hp=18, ac=18,
                              healing_spells=6, healing_bonus=3, healing_dice=4,
                              initiative_bonus=2,
-                             attack_parameters=[['rapier', 4, 2, 8]])
+                             attack_parameters=[['rapier', 4, 2, 8]], level=3)
 
         elif name == "generic_tank":
             self._initialise(name="generic tank", alignment="good",
                              hp=20, ac=17,
                              initiative_bonus=2,
-                             attack_parameters=[['great sword', 5, 3, 6, 6]])
+                             attack_parameters=[['great sword', 5, 3, 6, 6]], level=3)
 
         elif name == "mega_tank":
             self._initialise(name="mega tank", alignment="good",
                              hp=24, ac=17,
                              initiative_bonus=2,
-                             attack_parameters=[['great sword', 5, 3, 10]])
+                             attack_parameters=[['great sword', 5, 3, 10]], level=3)
 
         elif name == "a_b_dragon":
             self._initialise(name="Adult black dragon (minus frightful)", alignment="evil",
@@ -661,7 +670,7 @@ class Creature:
             self._initialise(name="Barbarian",
                              ac=18, hp=66, alignment="good",
                              attack_parameters=[['greatsword', 4, 1, 6, 6], ['frenzy greatsword', 4, 1, 6, 6]],
-                             log="hp is doubled due to resistance")
+                             log="hp is doubled due to resistance", level=3)
 
         elif name == "my druid":
             self._initialise(name="Twice Brown Bear Druid",
@@ -669,7 +678,7 @@ class Creature:
                              attack_parameters=[['claw', 5, 4, 8], ['bite', 5, 4, 6, 6]],
                              ability_bonuses=[0, 0, 0, 0, 3, 0],
                              sc_ability='wis', buff='cast_barkskin', buff_spells=4,
-                             log='The hp is bear x 2 + druid')
+                             log='The hp is bear x 2 + druid', level=3)
 
         elif name == "inert":
             self._initialise(name="inert", alignment="bad",
@@ -705,17 +714,17 @@ class Creature:
         elif name == "twibear":
             self._initialise(name="Twice Brown Bear Druid",
                              hp=86, ac=11, alignment="good",
-                             attack_parameters=[['claw', 5, 4, 8], ['bite', 5, 4, 6]])
+                             attack_parameters=[['claw', 5, 4, 8], ['bite', 5, 4, 6]], level=3)
 
         elif name == "barkskin_twibear":
             self._initialise(name="Druid twice as Barkskinned Brown Bear",
                              hp=86, ac=16, alignment="good",
-                             attack_parameters=[['claw', 5, 4, 8], ['bite', 5, 4, 6]])
+                             attack_parameters=[['claw', 5, 4, 8], ['bite', 5, 4, 6]], level=3)
 
         elif name == "barkskin_bear":
             self._initialise(name="Barkskinned Brown Bear", alignment="good",
                              hp=34, ac=16,
-                             attack_parameters=[['claw', 5, 4, 8], ['bite', 5, 4, 6]])
+                             attack_parameters=[['claw', 5, 4, 8], ['bite', 5, 4, 6]], level=4, hd=10)
 
         elif name == "giant_toad":
             self._initialise(name="Giant Toad", alignment="evil",
@@ -744,14 +753,26 @@ class Creature:
         :return: nothing. changes self.
         """
         if not level:
-            level = self.level  # is this wise??
-        self.hp = 0
-        self.hd.crit = 1  # Not-RAW first level is always max for PCs, but not monsters.
-        for x in range(level):
-            self.hp += self.hd.roll()
+            level = self.level
+        old_level = self.level
+        if not self.hd:
+                warnings.warn('No hit dice specified, setting to d8')
+        if not old_level: #zero???
+            self.hp = 0
+            self.hd.crit = 1  # Not-RAW first level is always max for PCs, but not monsters.
+            for x in range(level):
+                self.hp += self.hd.roll()
+        else:
+            for x in range(level-old_level):
+                self.hp += self.hd.roll()
         self.level = level
         self.starting_hp = self.hp
         self.proficiency = 1 + round((level) / 4)
+        if hasattr(self, 'attacks'):
+            for attack in self.attacks:
+                attack['attack'].bonus += self.proficiency - 1 + round((old_level) / 4)
+                #Changing by delta proficiency as there is no way of knowing what weapon bonuses there may be etc.
+
 
     def copy(self):
         """
@@ -767,9 +788,9 @@ class Creature:
         :param attack_parameters: A not-parsed set of attacks: a list of a list of attack bonus int, damage bonus int and damage dice size int/list
         :return: None (changes self.attacks)
         """
-        if type(attack_parameters) is str:
-            import json
-            attack_parameters = json.loads(attack_parameters)
+        #if type(attack_parameters) is str:
+        #    import json
+        #    attack_parameters = json.loads(attack_parameters)
         self.attacks = []
         for monoattack in attack_parameters:
             att = {'name': monoattack[0]}
@@ -1350,4 +1371,7 @@ def creature_check(who= 'commoner'):
 
 
 if __name__ == "__main__":
-    pass
+    bob=Creature('netsharpshooter')
+    print(bob.generate_character_sheet())
+    bob.set_level(20)
+    print(bob.generate_character_sheet())

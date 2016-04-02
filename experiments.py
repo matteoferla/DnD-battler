@@ -18,6 +18,8 @@ def cr_appraisal(party):
     #set to same team
     for pc in party:
         pc.alignment = "players"
+    out = csv.DictWriter(open("CR stats.csv",'w',newline=''),fieldnames=['beast','victory']) #DnD.Encounter().json() is overkill and messy
+    out.writeheader()
     #challenge each monster
     for beastname in DnD.Creature.beastiary:
         beast=DnD.Creature(beastname)
@@ -25,6 +27,7 @@ def cr_appraisal(party):
         party.append(beast)  #seems a bit wrong, but everything gets hard reset
         party.go_to_war(100)
         print(beastname+": "+str(party.tally['victories']['players'])+"%")
+        out.writerow({'beast': beast, 'victory': party.tally['victories']['players']})
         party.remove(beast)  # will perform a hard reset by default
 
 
