@@ -773,10 +773,48 @@ class Creature:
                 attack['attack'].bonus += self.proficiency - 1 + round((old_level) / 4)
                 #Changing by delta proficiency as there is no way of knowing what weapon bonuses there may be etc.
 
+    def change_attribute(self,**abilities):
+        """
+        Setting an ability attribute directly does not result in a recalculation.
+        For example:
+        >>> slashr = Creature('troll')
+        >>> slashr.abilities['cha'] = 16
+        This will not change the stats dependent on that ability.
+        This method attempts to change the dependent abilities.
+        A late addition, so the code does not make use of it.
+        :param attributes: key value pair
+        :return: None
+        """
+        for attr in abilities:
+            attr = attr[0:3].lower() #just in case
+            if attr in self.abilities:
+                old_attr=self.abilities[attr]
+                self.abilities[attr]=int(abilities[attr])
+                delta=math.floor(self.abilities[attr]/2-5)-math.floor(old_attr/2-5)
+                old_bonus=self.ability_bonuses[attr]
+                self.ability_bonuses[attr] +=delta #it might differ for some reason...
+                #con does not change
+                if attr == "str":
+                    pass
+                elif attr == "dex":
+                    pass
+                elif attr == "con":
+                    pass
+                elif attr == "int":
+                    pass
+                elif attr == "wis":
+                    pass
+                elif attr == "cha":
+                    pass
+
+
+
+            else:
+                raise ValueError('Unrecognised ability')
 
     def copy(self):
         """
-        :return: a copy of the creature.
+        :return: a copy of the creature. with an altered name.
         """
         self.copy_index += 1
         return Creature(self, name=self.name + ' ' + str(self.copy_index))
@@ -1342,11 +1380,9 @@ class Encounter:
         return folk
 
 
-########### MAIN #####
-##################################################################
-################### HERE IS WHERE YOU CAN DECIDE THE LINE UP #####
+########### Junk methods #####
 
-def test():
+def tarrasquicide():
     print('Test module...of sorts: 128 commoners can kill a tarrasque')
     print('how many commoners are needed to kill a tarasque')
     ted = Creature("tarrasque")
@@ -1364,6 +1400,11 @@ def test():
         print(ted.hp)
 
 def creature_check(who= 'commoner'):
+    """
+    Dev test area. Prints the abilities of a given creature from the beastiary to see if all is okay.
+    :param who: name
+    :return: None
+    """
     print('Ability bonus...')
     print('Beastiary: ',{x: Creature.beastiary[who][x] for x in 'AB_Str AB_Int AB_Con AB_Cha AB_Dex AB_Wis'.split()})
     print('Instance: ',Creature(who).ability_bonuses)
@@ -1371,7 +1412,5 @@ def creature_check(who= 'commoner'):
 
 
 if __name__ == "__main__":
-    bob=Creature('netsharpshooter')
-    print(bob.generate_character_sheet())
-    bob.set_level(20)
-    print(bob.generate_character_sheet())
+    pass
+    #I was updating the change_ability method of creature

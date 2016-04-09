@@ -27,7 +27,7 @@ def cr_appraisal(party):
         party.append(beast)  #seems a bit wrong, but everything gets hard reset
         party.go_to_war(100)
         print(beastname+": "+str(party.tally['victories']['players'])+"%")
-        out.writerow({'beast': beast, 'victory': party.tally['victories']['players']})
+        out.writerow({'beast': beastname, 'victory': party.tally['victories']['players']})
         party.remove(beast)  # will perform a hard reset by default
 
 
