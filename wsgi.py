@@ -11,7 +11,7 @@ else:
     place="server"
     host=8051
     apppath="app-root/repo/"
-DnD.Creature.beastiary=DnD.Creature._beastiary(apppath+'beastiary.csv')
+DnD.Creature.beastiary=DnD.Creature.load_beastiary(apppath+'beastiary.csv')
 
 def application(environ, start_response):
     sys.stdout =environ['wsgi.errors']

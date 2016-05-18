@@ -193,9 +193,9 @@ class Creature:
     """
 
     @staticmethod
-    def _beastiary(path):
+    def load_beastiary(path):
         """
-        `_beastiary(path)` is a function while beastiary is the attribute it fills.
+        `load_beastiary(path)` (formerly just `_beastiary`) is a function while beastiary is the attribute it fills.
 
         There are a few way of how the creature data comes about. This is to initialise the beastiary, now the standard source of beastiary.
 
@@ -257,7 +257,7 @@ class Creature:
             warnings.warn('Beastiary error, expected path ' + path + ' error ' + str(e))
             return {}
 
-    beastiary = _beastiary.__func__('beastiary.csv')
+    beastiary = load_beastiary.__func__('beastiary.csv')
     ability_names = ['str', 'dex', 'con', 'wis', 'int', 'cha']
 
     def __init__(self, wildcard, **kwargs):  # I removed *args... not sure what they did.
@@ -369,12 +369,18 @@ class Creature:
                 self.hd = Dice(self.ability_bonuses['con'], size_cat[self.settings['size']], avg=True, role="hd")
         elif 'hp' in self.settings and 'level' in self.settings:
             #Guess based on hp and level. It is not that dodgy really as the manual does not use odd dice.
-            options = {x: (int(self.settings['hp']) - x - self.ability_bonuses['con'])/(self.settings['level'] -1) - self.ability_bonuses['con'] for x in range(4,13,2)}
-            warnings.warn('Unfinished case. so Defaulting hit dice to d8 instead') #TODO finish
+            # hp =approx. 0.5 HD * (level-1) + HD + con * level
+            # HD * (0.5* (level-1)+1) = hp - con*level
+            # HD = (hp - con*level)/(level+1)
+            bestchoice=(int(self.settings['hp'])-int(self.ability_bonuses['con']) * int(self.settings['level']))/((int(self.settings['level'])+1))
+            print(int(self.settings['hp']),int(self.ability_bonuses['con']), int(self.settings['level']))
+            print("choice HD...",bestchoice)
+            #print("diagnosis...",self.ability_bonuses)
+            warnings.warn('Unfinished case to guess HD. so Defaulting hit dice to d8 instead') #TODO finish
             self.hd = Dice(self.ability_bonuses['con'], 8, avg=True, role="hd")
         else:
             #defaulting to d8
-            warnings.warn('Defaulting hit dice to d8')
+            warnings.warn('Insufficient info: defaulting hit dice to d8')
             self.hd = Dice(self.ability_bonuses['con'], 8, avg=True, role="hd")
 
         # Get HP
@@ -522,6 +528,7 @@ class Creature:
                 else:
                     raise TypeError("Cannot parse "+grouping)
         # individual abilities overwrite
+        #print("debug... ",cleandex['ability_bonuses'])
         for k in lowerdex:
             if k[0:3] in ability_names:
                 cleandex['abilities'][k[0:3]] = int(lowerdex[k])
@@ -531,8 +538,11 @@ class Creature:
                 cleandex['ability_bonuses'][k[3:6]] = int(lowerdex[k])
                 if k[3:6] not in lowerdex:
                     cleandex['abilities'][k[3:6]] = int(lowerdex[k])*2+10
+            elif k in ['abilities','ability_bonuses']:
+                pass
             else:
                 cleandex[k] = lowerdex[k]
+        #print("debug... ",cleandex['ability_bonuses'])
         return cleandex
 
     def _set(self, item, alt=None, expected_type='string'):
