@@ -590,7 +590,10 @@ class Creature:
         self.abilities = {n: 10 for n in self.ability_names}
         for ability in self.settings['abilities']: #a dictionary within a dictionary
             if ability in self.settings['ability_bonuses']:
-                assert 10+self.settings['ability_bonuses'][ability]*2 == self.settings['abilities'][ability], 'Mismatch: both ability score and bonus provided, but they differ'
+                print(ability)
+                if 10+self.settings['ability_bonuses'][ability]*2 != self.settings['abilities'][ability] and 10+self.settings['ability_bonuses'][ability]*2 +1 != self.settings['abilities'][ability]:
+                    warnings.warn('Mismatch: both ability score and bonus provided, ' \
+                    'but they differ ({0}: 10+{1}*2 vs. {2})'.format(ability,self.settings['ability_bonuses'][ability], self.settings['abilities'][ability]))
             self.abilities[ability] = int(self.settings['abilities'][ability])
             self.ability_bonuses[ability] = math.floor(int(self.settings['abilities'][ability])/2-5)
         for ability in self.settings['ability_bonuses']:
@@ -1447,3 +1450,4 @@ def creature_check(who= 'commoner'):
 if __name__ == "__main__":
     pass
     #TODO I was updating the change_ability method of creature
+    Creature('aboleth')
