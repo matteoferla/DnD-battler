@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 __author__ = "Matteo"
 __copyright__ = "Don't blame me for a TPK"
 __email__ = "matteo.ferla on the gmail"
