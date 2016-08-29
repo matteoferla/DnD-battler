@@ -450,9 +450,13 @@ class Creature:
                            'rapier': 8, 'scimitar': 6, 'sickle':4,
                            'handaxe':6, 'battleaxe':8, 'waraxe':10,'greataxe':12,
                            'javelin':6, 'spear':6, 'flail':8, 'glaive':10, 'halberd':10, 'lance':12, 'pike':10, 'trident': 6,
-                           'war pick':8, 'brütal war pick': [8,8], #okay, I could not resist it.
-                           'lighthammer':4, 'mace':6, 'maul':[6,6], 'warhammer':8,
+                           'war pick':8,
+                           'lighthammer':4, 'mace':6, 'warhammer':8,
                            'quaterstaff':6, 'morningstar':8, 'punch':1, 'whip':4} #parsing of strings for dice not implemented yet, so punch is d1 for now.
+                # TODO weapons removed as they gave trouble:
+                #'maul':[6,6],
+                # 'brütal war pick': [8, 8],  # okay, I could not resist it.
+
                 #bastard sword and war axe are no more due to the versatile rule, however they were kept here to keep it simple
                 #ranged weapons are missing for now...
                 for w in weapons.keys():
