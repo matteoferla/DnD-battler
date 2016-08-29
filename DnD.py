@@ -1028,6 +1028,8 @@ class Creature:
         :return: a string
         """
         def writeline(field,value,secvalue=None):
+            #returns _field_: value (secvalue)
+            #secvalues is if has a secondary value to be added in brachets
             if not secvalue:
                 return '_'+str(field).replace("_"," ")+'_: '+str(value)+'  \n'
             else:
@@ -1059,9 +1061,9 @@ class Creature:
         sheet += '### Attacks\n'
         sheet +=  writeline('Potential average damage per turn',self.hurtful)
         for d in self.attacks:
-                sheet +=  writeline(d['name'],d['attack'],d['damage'])
+                sheet += "* "+ writeline(d['name'],d['attack'],d['damage'])
         sheet += '### Raw data\n'
-        sheet+=str(self.__dict__)
+        sheet+=str(self.__dict__).replace('<br/>','\n')
         return sheet
 
 
