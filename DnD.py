@@ -330,6 +330,7 @@ class Creature:
 
         # Mod of preexisting
         if 'base' in self.settings:
+            #Sanify first and make victim
             if type(self.settings['base']) is str:
                 victim = Creature(
                     self.settings['base'])  # generate a preset and get its attributes. Seems a bit wasteful.
@@ -337,7 +338,10 @@ class Creature:
                 victim = self.settings['base']
             else:
                 raise TypeError
+            #copy all
+            #victim.ability_bonuses #in case the user provided with ability scores, which are overridden by adbility bonues
             base = {x: getattr(victim, x) for x in dir(victim) if getattr(victim, x) and x.find("__") == -1 and x.find("_") != 0 and x != 'beastiary'}
+            base['ability_bonuses']={}
             #base.update(**self.settings)
             for (k,v) in self.settings.items():
                 if type(v) is dict:
@@ -440,11 +444,20 @@ class Creature:
                 self._attack_parse(x)
                 self.attack_parameters = x
             except:
-                weapons = {'club': 6, 'dagger': 4, 'shortsword': 6, 'longsword': 8, 'bastardsword': 10,
-                           'greatsword': 12, 'rapier': 8, 'scimitar': 6}
+                #These have to be readable by _attack_parse
+                weapons = {'club': 4, 'greatclub':8,
+                           'dagger': 4, 'shortsword': 6, 'longsword': 8, 'bastardsword': 10, 'greatsword': 12,
+                           'rapier': 8, 'scimitar': 6, 'sickle':4,
+                           'handaxe':6, 'battleaxe':8, 'waraxe':10,'greataxe':12,
+                           'javelin':6, 'spear':6, 'flail':8, 'glaive':10, 'halberd':10, 'lance':12, 'pike':10, 'trident': 6,
+                           'war pick':8, 'brütal war pick': [8,8], #okay, I could not resist it.
+                           'lighthammer':4, 'mace':6, 'maul':[6,6], 'warhammer':8,
+                           'quaterstaff':6, 'morningstar':8, 'punch':1, 'whip':4} #parsing of strings for dice not implemented yet, so punch is d1 for now.
+                #bastard sword and war axe are no more due to the versatile rule, however they were kept here to keep it simple
+                #ranged weapons are missing for now...
                 for w in weapons.keys():
                     if self.settings['attack_parameters'].lower().find(w) > -1:
-                        # TODO fix the fact that a it gives the finesse option to all. Add more.
+                        # TODO fix the fact that a it gives the finesse option to all.
                         chosen_ab = self.ability_bonuses[max('str', 'dex', key=lambda ab: self.ability_bonuses[ab])]
                         self.attack_parameters = [[w, self.proficiency + chosen_ab, chosen_ab, weapons[w]]]
                         self._attack_parse(self.attack_parameters)
@@ -569,13 +582,16 @@ class Creature:
         """
         self.able = 1  # has abilities. if nothing at all is provided it goes to zero. This is for rocks...
         # set blanks
-        self.ability_bonuses = {n: 0 for n in self.ability_names}
+        self.ability_bonuses = {n: 0 for n in self.ability_names} #default for no given ability score is 10 (bonus = 0) as per manual.
         self.abilities = {n: 10 for n in self.ability_names}
-        for ability in self.settings['abilities']:
+        for ability in self.settings['abilities']: #a dictionary within a dictionary
+            if ability in self.settings['ability_bonuses']:
+                assert 10+self.settings['ability_bonuses'][ability]*2 == self.settings['abilities'][ability], 'Mismatch: both ability score and bonus provided, but they differ'
             self.abilities[ability] = int(self.settings['abilities'][ability])
             self.ability_bonuses[ability] = math.floor(int(self.settings['abilities'][ability])/2-5)
         for ability in self.settings['ability_bonuses']:
             self.ability_bonuses[ability] = self.settings['ability_bonuses'][ability]
+            self.abilities[ability] = 10 + 2 * self.ability_bonuses[ability] #I know it means nothing, but I am unsure why this was absent.
 
     def _fill_from_dict(self, dictionary):
         return self._initialise(**dictionary)
@@ -1426,4 +1442,4 @@ def creature_check(who= 'commoner'):
 
 if __name__ == "__main__":
     pass
-    #I was updating the change_ability method of creature
+    #TODO I was updating the change_ability method of creature
