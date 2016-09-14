@@ -8,7 +8,7 @@ import random
 import math
 import warnings
 
-# N="\n"
+#N="\n"
 N = "<br/>"
 TARGET = 'enemy alive weakest'
 # target='enemy alive weakest', target='enemy alive random', target='enemy alive fiersomest'
@@ -1353,7 +1353,10 @@ class Encounter:
                 se[i] = "NA"
         self.reset()
         for i in list(x):
-            self.note += str(i) + ': ' + str(round(x[i], 2)) + ' ± ' + str(round(se[i], 2)) + '; '
+            try:
+                self.note += str(i) + ': ' + str(round(float(x[i]), 2)) + ' ± ' + str(round(float(se[i]), 2)) + '; '
+            except:
+                self.note += str(i) + ': ' + str(x[i]) + ' ± ' + str(se[i]) + '; '
         return self
 
     def find(self, what, searcher=None, team=None):
