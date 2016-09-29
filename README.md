@@ -2,7 +2,9 @@
 Welcome to the D&D 5e Encounter simulator.
 It was written to determine victory probabilities and to test some hypotheses.
 [An online version of the simulator is hosted in Openshift](http://battle-matteoferla.rhcloud.com)    
-**NB.** The server goes down quite often as it is a low CPU app on Openshift and, despite the one minute timeout, it maxes out the usage quota and I have to reset it manually —there seem to be a lot of tarrasque vs. dragon battles. So if it down, please feel free to email matteo dot ferla at gmail.com and I'll reboot it.
+    
+**NB.** The server goes down quite often as it is a low CPU app on Openshift and, despite the one minute timeout, it maxes out the usage quota and I have to reset it manually —there seem to be a lot of tarrasque vs. dragon battles.    
+So if it down, please feel free to email matteo dot ferla at gmail.com and I'll reboot it.
 
 # New
 The simulator relies on  creature information present in the `beastiary.csv` file. This file was kindly compiled by Jeff Fox.
