@@ -5,6 +5,7 @@ It was written to determine victory probabilities and to test some hypotheses.
     
 **NB.** The server goes down quite often as it is a low CPU app on Openshift and, despite the one minute timeout, it maxes out the usage quota and I have to reset it manually —there seem to be a lot of tarrasque vs. dragon battles.    
 So if it down, please feel free to email matteo dot ferla at gmail.com and I'll reboot it.
+
 **NB.** A repository of the server is available [here](https://github.com/matteoferla/DnD-encounter-simulator-site).
 
 # New
