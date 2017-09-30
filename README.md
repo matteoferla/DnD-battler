@@ -1,3 +1,7 @@
+
+<a href="https://codeclimate.com/github/matteoferla/DnD-battler"><img src="https://codeclimate.com/github/matteoferla/DnD-battler/badges/gpa.svg" /></a>
+<a href="https://codeclimate.com/github/matteoferla/DnD-battler/"><img src="https://codeclimate.com/github/matteoferla/DnD-battler/badges/issue_count.svg" /></a>
+
 # DnD Encounter simulator
 Welcome to the D&D 5e Encounter simulator.
 It was written to determine victory probabilities and to test some hypotheses.
