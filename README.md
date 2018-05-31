@@ -1,7 +1,7 @@
+NB. This is a python 3 script and is not intended to work with 2. Some folk may have made forks that do —I don't know.
+NB. This code is rather messy. Don't believe me? Look at these embarrasing badges: 
 <a href="https://codeclimate.com/github/matteoferla/DnD-battler"><img src="https://codeclimate.com/github/matteoferla/DnD-battler/badges/gpa.svg" /></a>
 <a href="https://codeclimate.com/github/matteoferla/DnD-battler/"><img src="https://codeclimate.com/github/matteoferla/DnD-battler/badges/issue_count.svg" /></a>
-
-NB. This is a python 3 script and is not intended to work with 2. Some folk may have made forks that do —I don't know.
 
 # DnD Encounter simulator
 Welcome to the D&D 5e Encounter simulator.
