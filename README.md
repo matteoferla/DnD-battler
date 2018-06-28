@@ -43,6 +43,51 @@ The muchkinishness has a deleterious side-effect when the method deathmatch of t
 >>> print(Encounter("ancient blue dragon").addmob(85).go_to_war(10))  #An ancient blue dragon is nearly a match for 85 commoners (who crit evenutally)...
 ```
 
+# Note on altering methods
+
+The behaviour of a Creature is dictated by `act()` class method.
+Specifically, the simulations runs _n_ encounters via `Encounter(<...>).go_to_war(n)_`, which runs `.battle()` _n_ times. The latter method iterates across the creatures running their `Creature().act()` method, which makes them decide whether to heal, dodge, attack, free themselves, buff, throw net etc. The attack is called `.multiattack()`
+If you want to override the behaviour of say a creature to attack regardlessly and at random you can change the class's method `act()`
+
+```
+import random, DnD, types
+
+donald=DnD.Creature("Donald",base="commoner",alignment='Murica')
+kim=DnD.Creature("Kim",base="commoner", alignment='NKorea')
+rex=DnD.Creature("Rex",base="owlbear",alignment='Murica')
+
+# new method
+def trumpconomy(self,verbose=0, assess=0):
+    if not self.arena.find('alive enemy') and len(self.arena.find('alive ally')) == 1: #TrumpMod: Win when all bar one.
+        raise Encounter.Victory()
+    for i in range(len(self.attacks)):
+        try:
+            opponent = random.choice([other for other in self.arena.combattants if other is not self]) #TrumpMod kill all bar self.
+        except IndexError:
+            raise self.arena.Victory()
+        if verbose:
+            verbose.append(self.name + ' attacks ' + opponent.name + ' with ' + str(self.attacks[i]['name']))
+        # This was the hit method. put here for now.
+        self.attacks[i]['attack'].advantage = self.check_advantage(opponent)
+        if self.attacks[i]['attack'].roll(verbose) >= opponent.ac:
+            # self.attacks[i]['damage'].crit = self.attacks[i]['attack'].crit  #Pass the crit if present.
+            h = self.attacks[i]['damage'].roll(verbose)
+            opponent.take_damage(h, verbose)
+            self.tally['damage'] += h
+            self.tally['hits'] += 1
+        else:
+            self.tally['misses'] += 1
+
+
+# adding the unbound method as a bound method...
+donald.act=types.MethodType(trumpconomy, donald)
+
+print(DnD.Encounter(donald,rex,kim).battle(verbose=1).masterlog)
+```
+
+In round one Donald attacks his ally Rex, thus proving the behavior is altered.
+
+
 # Class summary
 ## Dice
 Dice accepts bonus plus an int —8 is a d8— or a list of dice —[6,6] is a 2d6— or nothing —d20.
