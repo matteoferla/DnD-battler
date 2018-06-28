@@ -4,12 +4,14 @@ __copyright__ = "Don't blame me for a TPK"
 __email__ = "matteo.ferla on the gmail"
 __date__ = '23/08/15'
 
-import random
 import math
+import random
 import warnings
+import csv
+import json
 
-N="\n"
-#N = "<br/>"
+N = "\n"
+# N = "<br/>"
 TARGET = 'enemy alive weakest'
 # target='enemy alive weakest', target='enemy alive random', target='enemy alive fiersomest'
 
@@ -245,7 +247,6 @@ class Creature:
         * AB_Cha
         """
         try:
-            import csv
             r = csv.reader(open(path, encoding='utf-8'))
             headers = next(r)
             beastiary = {}
@@ -330,7 +331,7 @@ class Creature:
 
         # Mod of preexisting
         if 'base' in self.settings:
-            #Sanify first and make victim
+            # Sanify first and make victim
             if type(self.settings['base']) is str:
                 victim = Creature(
                     self.settings['base'])  # generate a preset and get its attributes. Seems a bit wasteful.
@@ -338,12 +339,13 @@ class Creature:
                 victim = self.settings['base']
             else:
                 raise TypeError
-            #copy all
-            #victim.ability_bonuses #in case the user provided with ability scores, which are overridden by adbility bonues
-            base = {x: getattr(victim, x) for x in dir(victim) if getattr(victim, x) and x.find("__") == -1 and x.find("_") != 0 and x != 'beastiary'}
-            base['ability_bonuses']={}
-            #base.update(**self.settings)
-            for (k,v) in self.settings.items():
+            # copy all
+            # victim.ability_bonuses #in case the user provided with ability scores, which are overridden by adbility bonues
+            base = {x: getattr(victim, x) for x in dir(victim) if
+                    getattr(victim, x) and x.find("__") == -1 and x.find("_") != 0 and x != 'beastiary'}
+            base['ability_bonuses'] = {}
+            # base.update(**self.settings)
+            for (k, v) in self.settings.items():
                 if type(v) is dict:
                     base[k].update(v)
                 else:
@@ -373,18 +375,19 @@ class Creature:
             if self.settings['size'] in size_cat.keys():
                 self.hd = Dice(self.ability_bonuses['con'], size_cat[self.settings['size']], avg=True, role="hd")
         elif 'hp' in self.settings and 'level' in self.settings:
-            #Guess based on hp and level. It is not that dodgy really as the manual does not use odd dice.
+            # Guess based on hp and level. It is not that dodgy really as the manual does not use odd dice.
             # hp =approx. 0.5 HD * (level-1) + HD + con * level
             # HD * (0.5* (level-1)+1) = hp - con*level
             # HD = (hp - con*level)/(level+1)
-            bestchoice=(int(self.settings['hp'])-int(self.ability_bonuses['con']) * int(self.settings['level']))/((int(self.settings['level'])+1))
-            print(int(self.settings['hp']),int(self.ability_bonuses['con']), int(self.settings['level']))
-            print("choice HD...",bestchoice)
-            #print("diagnosis...",self.ability_bonuses)
-            warnings.warn('Unfinished case to guess HD. so Defaulting hit dice to d8 instead') #TODO finish
+            bestchoice = (int(self.settings['hp']) - int(self.ability_bonuses['con']) * int(self.settings['level'])) / (
+            (int(self.settings['level']) + 1))
+            print(int(self.settings['hp']), int(self.ability_bonuses['con']), int(self.settings['level']))
+            print("choice HD...", bestchoice)
+            # print("diagnosis...",self.ability_bonuses)
+            warnings.warn('Unfinished case to guess HD. so Defaulting hit dice to d8 instead')  # TODO finish
             self.hd = Dice(self.ability_bonuses['con'], 8, avg=True, role="hd")
         else:
-            #defaulting to d8
+            # defaulting to d8
             warnings.warn('Insufficient info: defaulting hit dice to d8')
             self.hd = Dice(self.ability_bonuses['con'], 8, avg=True, role="hd")
 
@@ -414,7 +417,7 @@ class Creature:
             self.sc_ab = max('wis', 'int', 'cha',
                              key=lambda ab: self.ability_bonuses[ab])  # Going for highest. seriously?!
             print(
-                "Please specify spellcasting ability of " + self.name + " next time, this time " + self.sc_ab + " was used as it was biggest.")
+                    "Please specify spellcasting ability of " + self.name + " next time, this time " + self.sc_ab + " was used as it was biggest.")
         else:
             self.sc_ab = 'con'  # TODO fix this botch up.
         if not 'healing_bonus' in self.settings:
@@ -439,26 +442,27 @@ class Creature:
             self.settings['attack_parameters'] = 'dagger'
         if type(self.settings['attack_parameters']) is str:
             try:
-                import json
                 x = json.loads(self.settings['attack_parameters'].replace("*", "\""))
                 self._attack_parse(x)
                 self.attack_parameters = x
             except:
-                #These have to be readable by _attack_parse
-                weapons = {'club': 4, 'greatclub':8,
+                # These have to be readable by _attack_parse
+                weapons = {'club': 4, 'greatclub': 8,
                            'dagger': 4, 'shortsword': 6, 'longsword': 8, 'bastardsword': 10, 'greatsword': 12,
-                           'rapier': 8, 'scimitar': 6, 'sickle':4,
-                           'handaxe':6, 'battleaxe':8, 'waraxe':10,'greataxe':12,
-                           'javelin':6, 'spear':6, 'flail':8, 'glaive':10, 'halberd':10, 'lance':12, 'pike':10, 'trident': 6,
-                           'war pick':8,
-                           'lighthammer':4, 'mace':6, 'warhammer':8,
-                           'quaterstaff':6, 'morningstar':8, 'punch':1, 'whip':4} #parsing of strings for dice not implemented yet, so punch is d1 for now.
+                           'rapier': 8, 'scimitar': 6, 'sickle': 4,
+                           'handaxe': 6, 'battleaxe': 8, 'waraxe': 10, 'greataxe': 12,
+                           'javelin': 6, 'spear': 6, 'flail': 8, 'glaive': 10, 'halberd': 10, 'lance': 12, 'pike': 10,
+                           'trident': 6,
+                           'war pick': 8,
+                           'lighthammer': 4, 'mace': 6, 'warhammer': 8,
+                           'quaterstaff': 6, 'morningstar': 8, 'punch': 1,
+                           'whip': 4}  # parsing of strings for dice not implemented yet, so punch is d1 for now.
                 # TODO weapons removed as they gave trouble:
-                #'maul':[6,6],
+                # 'maul':[6,6],
                 # 'brütal war pick': [8, 8],  # okay, I could not resist it.
 
-                #bastard sword and war axe are no more due to the versatile rule, however they were kept here to keep it simple
-                #ranged weapons are missing for now...
+                # bastard sword and war axe are no more due to the versatile rule, however they were kept here to keep it simple
+                # ranged weapons are missing for now...
                 for w in weapons.keys():
                     if self.settings['attack_parameters'].lower().find(w) > -1:
                         # TODO fix the fact that a it gives the finesse option to all.
@@ -530,37 +534,37 @@ class Creature:
         Sanify the settings
         :return: a cleaned dictionary
         """
-        ability_names=['str', 'dex', 'con', 'wis', 'int', 'cha']
-        #lowercase
+        ability_names = ['str', 'dex', 'con', 'wis', 'int', 'cha']
+        # lowercase
         lowerdex = {k.lower(): dirtydex[k] for k in dirtydex}
 
-        #sort issue with abilities
-        cleandex = {'abilities':{}, 'ability_bonuses': {}}
+        # sort issue with abilities
+        cleandex = {'abilities': {}, 'ability_bonuses': {}}
         ##dicts present
-        for grouping in ['abilities','ability_bonuses']:
+        for grouping in ['abilities', 'ability_bonuses']:
             if grouping in lowerdex:
                 if type(lowerdex[grouping]) is dict:
                     cleandex[grouping] = lowerdex[grouping]
                 elif type(lowerdex[grouping]) is list and len(lowerdex[grouping]) == 6:
-                    cleandex[grouping] = {ability_names[i]: lowerdex[grouping][i] for i in range(0,6)}
+                    cleandex[grouping] = {ability_names[i]: lowerdex[grouping][i] for i in range(0, 6)}
                 else:
-                    raise TypeError("Cannot parse "+grouping)
+                    raise TypeError("Cannot parse " + grouping)
         # individual abilities overwrite
-        #print("debug... ",cleandex['ability_bonuses'])
+        # print("debug... ",cleandex['ability_bonuses'])
         for k in lowerdex:
             if k[0:3] in ability_names:
                 cleandex['abilities'][k[0:3]] = int(lowerdex[k])
-                if 'ab_'+k not in lowerdex:
-                    cleandex['abilities'][k[0:3]] = math.floor(int(lowerdex[k])/2-5)
+                if 'ab_' + k not in lowerdex:
+                    cleandex['abilities'][k[0:3]] = math.floor(int(lowerdex[k]) / 2 - 5)
             elif k in ['ab_str', 'ab_dex', 'ab_con', 'ab_wis', 'ab_int', 'ab_cha']:
                 cleandex['ability_bonuses'][k[3:6]] = int(lowerdex[k])
                 if k[3:6] not in lowerdex:
-                    cleandex['abilities'][k[3:6]] = int(lowerdex[k])*2+10
-            elif k in ['abilities','ability_bonuses']:
+                    cleandex['abilities'][k[3:6]] = int(lowerdex[k]) * 2 + 10
+            elif k in ['abilities', 'ability_bonuses']:
                 pass
             else:
                 cleandex[k] = lowerdex[k]
-        #print("debug... ",cleandex['ability_bonuses'])
+        # print("debug... ",cleandex['ability_bonuses'])
         return cleandex
 
     def _set(self, item, alt=None, expected_type='string'):
@@ -586,18 +590,24 @@ class Creature:
         """
         self.able = 1  # has abilities. if nothing at all is provided it goes to zero. This is for rocks...
         # set blanks
-        self.ability_bonuses = {n: 0 for n in self.ability_names} #default for no given ability score is 10 (bonus = 0) as per manual.
+        self.ability_bonuses = {n: 0 for n in
+                                self.ability_names}  # default for no given ability score is 10 (bonus = 0) as per manual.
         self.abilities = {n: 10 for n in self.ability_names}
-        for ability in self.settings['abilities']: #a dictionary within a dictionary
+        for ability in self.settings['abilities']:  # a dictionary within a dictionary
             if ability in self.settings['ability_bonuses']:
-                if 10+self.settings['ability_bonuses'][ability]*2 != self.settings['abilities'][ability] and 10+self.settings['ability_bonuses'][ability]*2 +1 != self.settings['abilities'][ability]:
+                if 10 + self.settings['ability_bonuses'][ability] * 2 != self.settings['abilities'][ability] and 10 + \
+                        self.settings['ability_bonuses'][ability] * 2 + 1 != self.settings['abilities'][ability]:
                     warnings.warn('Mismatch: both ability score and bonus provided, ' \
-                    'but they differ ({0}: 10+{1}*2 vs. {2})'.format(ability,self.settings['ability_bonuses'][ability], self.settings['abilities'][ability]))
+                                  'but they differ ({0}: 10+{1}*2 vs. {2})'.format(ability,
+                                                                                   self.settings['ability_bonuses'][
+                                                                                       ability],
+                                                                                   self.settings['abilities'][ability]))
             self.abilities[ability] = int(self.settings['abilities'][ability])
-            self.ability_bonuses[ability] = math.floor(int(self.settings['abilities'][ability])/2-5)
+            self.ability_bonuses[ability] = math.floor(int(self.settings['abilities'][ability]) / 2 - 5)
         for ability in self.settings['ability_bonuses']:
             self.ability_bonuses[ability] = self.settings['ability_bonuses'][ability]
-            self.abilities[ability] = 10 + 2 * self.ability_bonuses[ability] #I know it means nothing, but I am unsure why this was absent.
+            self.abilities[ability] = 10 + 2 * self.ability_bonuses[
+                ability]  # I know it means nothing, but I am unsure why this was absent.
 
     def _fill_from_dict(self, dictionary):
         return self._initialise(**dictionary)
@@ -618,7 +628,7 @@ class Creature:
         if name == "netsharpshooter":
             self._initialise(name="netsharpshooter",
                              alignment="good",
-                             hp=18, ac=18, hd = 8,
+                             hp=18, ac=18, hd=8,
                              initiative_bonus=2,
                              healing_spells=6, healing_bonus=3, healing_dice=4, sc_ability="cha",
                              attack_parameters=[['rapier', 4, 2, 8]], alt_attack=['net', 4, 0, 0], level=3)
@@ -789,14 +799,14 @@ class Creature:
             level = self.level
         old_level = self.level
         if not self.hd:
-                warnings.warn('No hit dice specified, setting to d8')
-        if not old_level: #zero???
+            warnings.warn('No hit dice specified, setting to d8')
+        if not old_level:  # zero???
             self.hp = 0
             self.hd.crit = 1  # Not-RAW first level is always max for PCs, but not monsters.
             for x in range(level):
                 self.hp += self.hd.roll()
         else:
-            for x in range(level-old_level):
+            for x in range(level - old_level):
                 self.hp += self.hd.roll()
         self.level = level
         self.starting_hp = self.hp
@@ -804,9 +814,9 @@ class Creature:
         if hasattr(self, 'attacks'):
             for attack in self.attacks:
                 attack['attack'].bonus += self.proficiency - 1 + round((old_level) / 4)
-                #Changing by delta proficiency as there is no way of knowing what weapon bonuses there may be etc.
+                # Changing by delta proficiency as there is no way of knowing what weapon bonuses there may be etc.
 
-    def change_attribute(self,**abilities):
+    def change_attribute(self, **abilities):
         """
         Setting an ability attribute directly does not result in a recalculation.
         For example:
@@ -819,14 +829,14 @@ class Creature:
         :return: None
         """
         for attr in abilities:
-            attr = attr[0:3].lower() #just in case
+            attr = attr[0:3].lower()  # just in case
             if attr in self.abilities:
-                old_attr=self.abilities[attr]
-                self.abilities[attr]=int(abilities[attr])
-                delta=math.floor(self.abilities[attr]/2-5)-math.floor(old_attr/2-5)
-                old_bonus=self.ability_bonuses[attr]
-                self.ability_bonuses[attr] +=delta #it might differ for some reason...
-                #con does not change
+                old_attr = self.abilities[attr]
+                self.abilities[attr] = int(abilities[attr])
+                delta = math.floor(self.abilities[attr] / 2 - 5) - math.floor(old_attr / 2 - 5)
+                old_bonus = self.ability_bonuses[attr]
+                self.ability_bonuses[attr] += delta  # it might differ for some reason...
+                # con does not change
                 if attr == "str":
                     pass
                 elif attr == "dex":
@@ -859,7 +869,7 @@ class Creature:
         :param attack_parameters: A not-parsed set of attacks: a list of a list of attack bonus int, damage bonus int and damage dice size int/list
         :return: None (changes self.attacks)
         """
-        #if type(attack_parameters) is str:
+        # if type(attack_parameters) is str:
         #    import json
         #    attack_parameters = json.loads(attack_parameters)
         self.attacks = []
@@ -906,7 +916,7 @@ class Creature:
         # there should be a few more.
         # conditions.
 
-    def reset(self, hard = False):
+    def reset(self, hard=False):
         """
         Resets the creature back to health (a long rest). a hard reset resets its scores
         :param hard: bool, false keeps tallies
@@ -914,11 +924,11 @@ class Creature:
         """
         self.hp = self.starting_hp
         if self.concentrating:
-            self.conc_fx() #TODO this looks fishy
+            self.conc_fx()  # TODO this looks fishy
         self.healing_spells = self.starting_healing_spells
         if hard:
-            self.tally={'damage': 0,'hp': 0, 'hits': 0,'misses': 0,'rounds': 0,'healing_spells': 0,'battles': 0,'dead':0}
-
+            self.tally = {'damage': 0, 'hp': 0, 'hits': 0, 'misses': 0, 'rounds': 0, 'healing_spells': 0, 'battles': 0,
+                          'dead': 0}
 
     def check_advantage(self, opponent):
         adv = 0
@@ -1049,16 +1059,18 @@ class Creature:
         An markdown character sheet.
         :return: a string
         """
-        def writeline(field,value,secvalue=None):
-            #returns _field_: value (secvalue)
-            #secvalues is if has a secondary value to be added in brachets
+
+        def writeline(field, value, secvalue=None):
+            # returns _field_: value (secvalue)
+            # secvalues is if has a secondary value to be added in brachets
             if not secvalue:
-                return '_'+str(field).replace("_"," ")+'_: '+str(value)+'  \n'
+                return '_' + str(field).replace("_", " ") + '_: ' + str(value) + '  \n'
             else:
-                return '_'+str(field).replace("_"," ")+'_: '+str(value)+' ('+str(secvalue)+')  \n'
-        sheet = '# '+self.name.upper()+'\n'
-        sheet +=  writeline('Name',self.name)
-        sheet +=  writeline('Alignment',self.alignment)
+                return '_' + str(field).replace("_", " ") + '_: ' + str(value) + ' (' + str(secvalue) + ')  \n'
+
+        sheet = '# ' + self.name.upper() + '\n'
+        sheet += writeline('Name', self.name)
+        sheet += writeline('Alignment', self.alignment)
         if self.cr:
             level = self.cr
             lname = 'CR'
@@ -1066,28 +1078,27 @@ class Creature:
             level = self.level
             lname = 'Level'
         if self.hd:
-            sheet +=  writeline(lname+' (hit dice)',level,self.hd)
+            sheet += writeline(lname + ' (hit dice)', level, self.hd)
         else:
-            sheet +=  writeline(lname,level)
+            sheet += writeline(lname, level)
         if self.xp:
-            sheet += writeline('XP',self.xp)
+            sheet += writeline('XP', self.xp)
         sheet += '## Abilities\n'
         for ab in self.ability_names:
-            sheet +=  writeline(ab,self.abilities[ab],self.ability_bonuses[ab])
+            sheet += writeline(ab, self.abilities[ab], self.ability_bonuses[ab])
         sheet += '## Combat\n'
-        sheet +=  writeline('Hit points (hp total)',self.hp,self.starting_hp)
-        sheet +=  writeline('Condition',self.condition)
-        sheet +=  writeline('Initiative',self.initiative)
-        sheet +=  writeline('Proficiency',self.proficiency)
-        sheet +=  writeline('Armour class',self.ac)
+        sheet += writeline('Hit points (hp total)', self.hp, self.starting_hp)
+        sheet += writeline('Condition', self.condition)
+        sheet += writeline('Initiative', self.initiative)
+        sheet += writeline('Proficiency', self.proficiency)
+        sheet += writeline('Armour class', self.ac)
         sheet += '### Attacks\n'
-        sheet +=  writeline('Potential average damage per turn',self.hurtful)
+        sheet += writeline('Potential average damage per turn', self.hurtful)
         for d in self.attacks:
-                sheet += "* "+ writeline(d['name'],d['attack'],d['damage'])
+            sheet += "* " + writeline(d['name'], d['attack'], d['damage'])
         sheet += '### Raw data\n'
-        sheet+=str(self.__dict__).replace('<br/>','\n')
+        sheet += str(self.__dict__).replace('<br/>', '\n')
         return sheet
-
 
 
 ######################ARENA######################
@@ -1123,7 +1134,7 @@ class Encounter:
         # print(lineup)
         # self.lineup={x.name:x for x in lineup}
         # self.lineup = list(lineup)  #Classic fuck-up
-        self.KILL=False #needed for code.
+        self.KILL = False  # needed for code.
         self.tally = {'rounds': 0, 'battles': 0, 'perfect': None, 'close': None, 'victories': None}
         self.active = None
         self.name = 'Encounter'
@@ -1143,7 +1154,6 @@ class Encounter:
         self.tally['close'] = {side: 0 for side in self.sides}
         self.tally['victories'] = {side: 0 for side in self.sides}
         self.reset(hard)
-
 
     def append(self, newbie):
         if not type(newbie) is Creature:
@@ -1182,7 +1192,6 @@ class Encounter:
         return string
 
     def json(self):
-        import json
         jsdic = {"prediction": self.predict(),
                  "battles": self.tally['battles'],
                  "rounds": self.tally['rounds'],
@@ -1212,7 +1221,7 @@ class Encounter:
         elif type(other) is Encounter:
             self.extend(other.combattants)
         else:
-            raise TypeError('Unsupported type '+str(type(other)))
+            raise TypeError('Unsupported type ' + str(type(other)))
 
     def __iter__(self):
         return iter(self.combattants)
@@ -1228,7 +1237,7 @@ class Encounter:
             schmuck.reset(hard)
         return self
 
-    def remove(self,moriturus):
+    def remove(self, moriturus):
         """
         Removes a creature and resets and rechecks
         :param moriturus: The creature name to be dropped
@@ -1240,12 +1249,11 @@ class Encounter:
                     self.combattants.remove(chap)
                     break
             else:
-                raise ValueError(moriturus+' not found in Encounter among '+"; ".join([chap.name for chap in self.combattants]))
+                raise ValueError(
+                    moriturus + ' not found in Encounter among ' + "; ".join([chap.name for chap in self.combattants]))
         elif type(moriturus) is Creature:
             self.combattants.remove(moriturus)
         self.blank()
-
-
 
     def set_deathmatch(self):
         colours = 'red blue green orange yellow lime cyan violet ultraviolet pink brown black white octarine teal magenta blue-green fuchsia purple cream grey'.split(
@@ -1294,11 +1302,11 @@ class Encounter:
         rate = {a: safediv(hp[a], damage[b], 0.0), b: safediv(hp[b], damage[a], 0.0)}
         return ('Rough a priori predictions:' + N +
                 '> ' + str(a) + '= expected rounds to survive: ' + str(
-            round(rate[a], 2)) + '; crudely normalised: ' + str(
-            round(safediv(rate[a], (rate[a] + rate[b]) * 100))) + '%' + N +
+                    round(rate[a], 2)) + '; crudely normalised: ' + str(
+                    round(safediv(rate[a], (rate[a] + rate[b]) * 100))) + '%' + N +
                 '> ' + str(b) + '= expected rounds to survive: ' + str(
-            round(rate[b], 2)) + '; crudely normalised: ' + str(
-            round(safediv(rate[b], (rate[a] + rate[b]) * 100))) + '%' + N)
+                    round(rate[b], 2)) + '; crudely normalised: ' + str(
+                    round(safediv(rate[b], (rate[a] + rate[b]) * 100))) + '%' + N)
 
     def battle(self, reset=1, verbose=1):
         if verbose: self.masterlog.append('==NEW BATTLE==')
@@ -1343,9 +1351,9 @@ class Encounter:
 
     def go_to_war(self, rounds=1000):
         for i in range(rounds):
-            #print(i,self.KILL)
+            # print(i,self.KILL)
             self.battle(1, 0)
-            if self.KILL==True:
+            if self.KILL == True:
                 break
         x = {y: self.tally['victories'][y] for y in self.sides}
         se = {}
@@ -1441,18 +1449,19 @@ def tarrasquicide():
         print(str(int(max)) + " commoners: " + str(wwe.tally['victories']['good']))
         print(ted.hp)
 
-def creature_check(who= 'commoner'):
+
+def creature_check(who='commoner'):
     """
     Dev test area. Prints the abilities of a given creature from the beastiary to see if all is okay.
     :param who: name
     :return: None
     """
     print('Ability bonus...')
-    print('Beastiary: ',{x: Creature.beastiary[who][x] for x in 'AB_Str AB_Int AB_Con AB_Cha AB_Dex AB_Wis'.split()})
-    print('Instance: ',Creature(who).ability_bonuses)
-    print('Mod: ',Creature(who,str=999).ability_bonuses)
+    print('Beastiary: ', {x: Creature.beastiary[who][x] for x in 'AB_Str AB_Int AB_Con AB_Cha AB_Dex AB_Wis'.split()})
+    print('Instance: ', Creature(who).ability_bonuses)
+    print('Mod: ', Creature(who, str=999).ability_bonuses)
 
 
 if __name__ == "__main__":
     pass
-    #TODO I was updating the change_ability method of creature
+    # TODO I was updating the change_ability method of creature
