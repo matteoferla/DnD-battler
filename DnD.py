@@ -4,11 +4,11 @@ __copyright__ = "Don't blame me for a TPK"
 __email__ = "matteo.ferla on the gmail"
 __date__ = '23/08/15'
 
+import csv
+import json
 import math
 import random
 import warnings
-import csv
-import json
 
 N = "\n"
 # N = "<br/>"
