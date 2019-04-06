@@ -127,17 +127,13 @@ class Dice:
         :param verbose:
         :return:
         """
-        result = self.bonus
-        for d in self.dice:
-            if self.avg:  # NPC rolls
-                if self.crit:
-                    result += d
-                else:
-                    result += round(d / 2 + 1)
-            else:
-                for x in range(0, self.crit + 1): result += random.randint(1, d)
-        self.crit = 0
-        return result
+        if self.avg: # NPC rolls
+            result = math.floor(sum(d/2+0.5 for d in self.dice))
+        else:
+            result = sum(random.randint(1,d) for d in self.dice)
+        if self.crit:
+            result *= 2;
+        return result+self.bonus
 
     def icosaroll(self, verbose=0):
         """
