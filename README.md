@@ -35,10 +35,10 @@ The muchkinishness has a deleterious side-effect when the method deathmatch of t
 >>> terry=DnD.Creature("lich")
 >>> terry.alignment = "good"  #the name of the alignment means only what team name they are in.  
 >>> arena = DnD.Encounter(level1, 'badger')  #Encounter accepts both Creature and strings.
->>> print(arena.go_to_war(1e5) #simulate 10,000 times
+>>> print(arena.go_to_war(10000)) #simulate 10,000 times
 >>> print(arena.battle(verbose = 1)) # simulate one encounter and tell what happens.
 >>> print(DnD.Creature('tarrasque').generate_character_sheet())  #md character sheet.
->>> print(Encounter("ancient blue dragon").addmob(85).go_to_war(10))  #An ancient blue dragon is nearly a match for 85 commoners (who crit evenutally)...
+>>> print(DnD.Encounter("ancient blue dragon").addmob(85).go_to_war(10))  #An ancient blue dragon is nearly a match for 85 commoners (who crit evenutally)...
 ```
 
 # Note on altering methods
