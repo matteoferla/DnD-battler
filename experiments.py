@@ -40,23 +40,23 @@ def commoner_brawl(n=5000):
     print(achilles.attacks[0]['damage'])
     ratty= DnD.Creature("giant rat")
     rattie = DnD.Creature("giant rat")
-    for d in [DnD.Dice(1, [2], role="damage"),
-              DnD.Dice(0, [4], role="damage"),
-              DnD.Dice(-1, [6], role="damage"),
-              DnD.Dice(-1, [2, 3], role="damage"),
-              DnD.Dice(1, [4], role="damage"),
-              DnD.Dice(0, [6], role="damage"),
-              DnD.Dice(-1, [8], role="damage"),
-              DnD.Dice(2, [2], role="damage"),
-              DnD.Dice(0, [2, 3], role="damage"),
-              DnD.Dice(-1, [3, 4], role="damage")]:
+    for d in [DnD.Dice(1, num_faces=[2], role="damage"),
+              DnD.Dice(0, num_faces=[4], role="damage"),
+              DnD.Dice(-1, num_faces=[6], role="damage"),
+              DnD.Dice(-1, num_faces=[2, 3], role="damage"),
+              DnD.Dice(1, num_faces=[4], role="damage"),
+              DnD.Dice(0, num_faces=[6], role="damage"),
+              DnD.Dice(-1, num_faces=[8], role="damage"),
+              DnD.Dice(2, num_faces=[2], role="damage"),
+              DnD.Dice(0, num_faces=[2, 3], role="damage"),
+              DnD.Dice(-1, num_faces=[3, 4], role="damage")]:
         achilles.attacks[0]['damage'] = d
         print(d,T, T.join([str(DnD.Encounter(*party).go_to_war(n).tally['victories']['Achaeans']) for party in [(achilles, hector),(achilles, ratty),(achilles, patrocles,ratty),(achilles, patrocles,ratty,rattie)]]))
 
 def dice_variance(d):
-        return sum([sum([(i+1-(d2+1)/2)**2 for i in range(d2)])/d2 for d2 in d.dice])
+        return sum([sum([(i+1-(d2+1)/2)**2 for i in range(d2)])/d2 for d2 in d.num_faces])
 
 if __name__ == "__main__":
     # cr_appraisal(DnD.Encounter('my druid','my barbarian','mega_tank', "netsharpshooter"))
     commoner_brawl()
-    #print(dice_variance(DnD.Dice(0, [100], role="damage")))
+    #print(dice_variance(DnD.Dice(0, num_faces=[100], role="damage")))
