@@ -8,10 +8,16 @@ Now it has been split up properly.
 
 * `Dice().dice` changed to `Dice().num_faces`.
 * `from_notation` created.
-* TODO invert num_faces and bonus!
+* TODO crit and advantage are handled so weirdly.
+
 
 ## Encounter
 
 * Victory moved out.
 
 ## Creature
+
+By having a faux-overloaded init method it was overly complicated. I have split it up to keep it simple.
+
+* finess and monks wis to ac, should be coded.
+* TODO: add proficiency_bonus where required.

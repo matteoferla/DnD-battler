@@ -1,17 +1,19 @@
-NB. This is a python 3 script and is not intended to work with 2. Some folk may have made forks that do —I don't know.
-NB. This code is rather messy. Don't believe me? Look at these embarrasing badges:       
+> This is a python 3 script and is not intended to work with 2. Some folk may have made forks that do —I don't know.
+> This code was my first project switching from Perl to Python, so was rather messy.
+> Due to the interest I have refactored it to make it cleaner (see [changelog 0.2](change_log_0.2.md).
+  
 
 # DnD Encounter simulator
 Welcome to the D&D 5e Encounter simulator.
 It was written to determine victory probabilities and to test some hypotheses.
-[An online version of the simulator](http://extras.matteoferla.com/dnd).
+[An online version of the simulator](https://extras.matteoferla.com/dnd).
     
 **NB.** The server goes down quite often as it is a low CPU app on Openshift and, despite the one minute timeout, it maxes out the usage quota and I have to reset it manually —there seem to be a lot of tarrasque vs. dragon battles.    
 So if it down, please feel free to email matteo dot ferla at gmail.com and I'll reboot it.
 
 **NB.** A repository of the server is available [here](https://github.com/matteoferla/DnD-encounter-simulator-site).
 
-# New
+## Monster manual
 The simulator relies on  creature information present in the `beastiary.csv` file. This file was kindly compiled by Jeff Fox.
 It contains all creature present in the D&D 5e SDR and is distributed under the following licence:
 Open Game License v 1.0a Copyright 2000, Wizards of the Coast, Inc. Copyright 2016, Wizards of the Coast, Inc.
