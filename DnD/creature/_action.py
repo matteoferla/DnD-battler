@@ -1,11 +1,28 @@
-from ._initialise import CreatureInitialise
 from ..victory import Victory
-class CreatureAction:
+from ._adv_base import CreatureAdvBase
+
+class CreatureAction(CreatureAdvBase):
 
     def ready(self):
         self.dodge = 0
         # there should be a few more.
         # conditions.
+
+    def isalive(self):
+        if self.hp > 0:
+            return True
+
+    def take_damage(self, points, verbose=0):
+        self.hp -= points
+        if verbose:
+            print(self.name + ' took ' + str(points) + ' of damage. Now on ' + str(self.hp) + ' hp.')
+        if self.concentrating:
+            dc = points / 2
+            if dc < 10: dc = 10
+            if self[self.spellcasting_ability_name].roll() < dc:
+                self.conc_fx()
+                if verbose:
+                    print(self.name + ' has lost their concentration')
 
     def reset(self, hard=False):
         """
@@ -37,7 +54,8 @@ class CreatureAction:
         if self.alt_attack['attack'].roll(verbose) >= opponent.ac:
             opponent.condition = 'netted'
             self.tally['hits'] += 1
-            if verbose: verbose.append(self.name + " netted " + opponent.name)
+            if verbose:
+                print(self.name + " netted " + opponent.name)
         else:
             self.tally['misses'] += 1
 
@@ -55,19 +73,21 @@ class CreatureAction:
 
     def heal(self, points, verbose=0):
         self.hp += points
-        if verbose: verbose.append(self.name + ' was healed by ' + str(points) + '. Now on ' + str(self.hp) + ' hp.')
+        if verbose:
+            print(self.name + ' was healed by ' + str(points) + '. Now on ' + str(self.hp) + ' hp.')
 
     def assess_wounded(self, verbose=0):
         targets = self.arena.find('bloodiest allies')
         if len(targets) > 0:
             weakling = targets[0]
             if weakling.starting_hp > (self.healing.num_faces[0] + self.healing.bonus + weakling.hp):
-                if verbose: verbose.append(self.name + " wants to heal " + weakling.name)
+                if verbose:
+                    print(self.name + " wants to heal " + weakling.name)
                 return weakling
             else:
                 return 0
         else:
-            raise NameError('A dead man wants to heal folk')
+            raise ValueError('A dead man wants to heal folk')
 
     def cast_healing(self, weakling, verbose=0):
         if self.healing_spells > 0:
@@ -79,7 +99,7 @@ class CreatureAction:
             return 0  # the default
         for i in range(len(self.attacks)):
             try:
-                opponent = self.arena.find(TARGET, self)[0]
+                opponent = self.arena.find(self.arena.target, self)[0]
             except IndexError:
                 raise self.arena.Victory()
             if verbose:
@@ -107,7 +127,7 @@ class CreatureAction:
     # TODO
     def TBA_act(self, verbose=0):
         if not self.arena.find('alive enemy'):
-            raise Encounter.Victory()
+            raise Victory()
         x = {'nothing': 'cast_nothing'}
         choice = [self.check_action(x) for x in self.actions]
         best = sorted(choice.keys(), key=choice.get)[0]
@@ -127,14 +147,17 @@ class CreatureAction:
         # Buff?
         if self.condition == 'netted':
             # NOT-RAW: DC10 strength check or something equally easy for monsters
-            if verbose: verbose.append(self.name + " freed himself from a net")
+            if verbose:
+                print(self.name + " freed himself from a net")
             self.condition = 'normal'
         elif self.buff_spells > 0 and self.concentrating == 0:
             self.conc_fx()
-            if verbose: verbose.append(self.name + ' buffs up!')
+            if verbose:
+                print(self.name + ' buffs up!')
             # greater action economy: waste opponent's turn.
         elif economy and self is self.arena.find('weakest allies')[0]:
-            if verbose: verbose.append(self.name + " is dodging")
+            if verbose:
+                print(self.name + " is dodging")
             self.dodge = 1
         elif economy and self.alt_attack['name'] == 'net':
             opponent = self.arena.find('fiersomest enemy alive', self)[0]

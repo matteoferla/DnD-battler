@@ -1,38 +1,46 @@
-from ..dice import Ability
+from ..dice import AbilityDie, Dice, SkillRoll, AttackRoll
+from ..creature_properties.proficiency import Proficiency
+from ..creature_properties.ac import AC
 
 class CreatureBase:
     # inherited by utils
 
     ability_names = ['str', 'dex', 'con', 'wis', 'int', 'cha']
 
-    def __init__(self): # this is to make PyCharm happy.
+    def __init__(self):
+        self.name = 'unnamed'
+        self.base = 'none'    # human bandit
+        self.type = 'unknown' # aberation, humanoid
+        self.size = 'medium'
         self.arena = None
-        self.settings = {}
-        self.name = 'nameless'
-        self.level = 0
+        self.level = 1
         self.xp = 0
-        self.proficiency = 0
-        self.hd = None
+        # proficiency
+        # self.proficiency.bonus is dynamic based on proficiency.level + proficiency.modifier
+        self.proficiency = Proficiency(0, 0)
+        # hits
+        self.hp = 4  # commoner.1
+        self.starting_hp = 4
+        self.hit_die = Dice(8, 0)
         #Ability
         self.able = 1  # has abilities. if nothing at all is provided it goes to zero. This is for rocks...
-        self.str = Ability(0)
-        self.dex = Ability(0)
-        self.con = Ability(0)
-        self.wis = Ability(0)
-        self.int = Ability(0)
-        self.cha = Ability(0)
+        self.str = AbilityDie(bonus=0, proficiency=self.proficiency)
+        self.dex = AbilityDie(bonus=0, proficiency=self.proficiency)
+        self.con = AbilityDie(bonus=0, proficiency=self.proficiency)
+        self.wis = AbilityDie(bonus=0, proficiency=self.proficiency)
+        self.int = AbilityDie(bonus=0, proficiency=self.proficiency)
+        self.cha = AbilityDie(bonus=0, proficiency=self.proficiency)
+        # AC
+        self.ac = AC(ability_dice=[self.dex], bonus=0)
         # other
-        self.ac = 0
-        self.initiative = self.dex
-        self.sc_ab = None
+        self.initiative = SkillRoll(self.dex, modifier=0, success_on_crit=False)
+        self.spellcasting_ability_name = None
         self.starting_healing_spells = 0
         self.healing_spells = self.starting_healing_spells
         self.healing = None  # Normally dice object
-        self.attacks = []
-        self.hurtful = 0
-        self.attack_parameters = []
+        self.attacks = [AttackRoll(name='club', ability_die=self.str, damage_dice=Dice(4,0), modifier=0)]
         self.alt_attack = {}
-        self.alignment = 'undeclared.'
+        self.alignment = 'undeclared'
         # internal stuff
         self.tally = {'damage': 0, 'hits': 0, 'dead': 0, 'misses': 0, 'battles': 0, 'rounds': 0, 'hp': 0,
                       'healing_spells': 0}
@@ -45,8 +53,6 @@ class CreatureBase:
         self.conc_fx = None
         self.cr = 0
         self.custom = []
-        self.hp = 0
-        self.starting_hp = 0
 
     @property
     def abilities(self):
@@ -57,4 +63,9 @@ class CreatureBase:
         :return:
         """
         return {n: getattr(self, n) for n in self.ability_names}
+
+    @property
+    def hurtful(self):
+        # this is the average damage it can do. But omits if it hits or not...
+        return sum([roll.damage_dice.mean() for roll in self.attacks])
 

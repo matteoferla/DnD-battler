@@ -1,5 +1,6 @@
 from ._base import CreatureBase
 from typing import *
+from copy import deepcopy
 
 class CreatureUtils(CreatureBase):
 
@@ -18,8 +19,8 @@ class CreatureUtils(CreatureBase):
         else:
             level = self.level
             lname = 'Level'
-        if self.hd:
-            rows.append(self._makeline(lname + ' (hit dice)', level, self.hd))
+        if self.hit_die:
+            rows.append(self._makeline(lname + ' (hit dice)', level, self.hit_die))
         else:
             rows.append(self._makeline(lname, level))
         if self.xp:
@@ -31,7 +32,7 @@ class CreatureUtils(CreatureBase):
         rows.append(self._makeline('Hit points (hp total)', self.hp, self.starting_hp))
         rows.append(self._makeline('Condition', self.condition))
         rows.append(self._makeline('Initiative', self.initiative))
-        rows.append(self._makeline('Proficiency', self.proficiency))
+        rows.append(self._makeline('Proficiency', self.proficiency.bonus))
         rows.append(self._makeline('Armour class', self.ac))
         rows.append('### Attacks')
         rows.append(self._makeline('Potential average damage per turn', self.hurtful))
@@ -67,3 +68,18 @@ class CreatureUtils(CreatureBase):
                 self.tally['rounds'] / battles) + ";}"
         else:
             return self.name + ": UNTESTED IN BATTLE"
+
+    def copy(self):
+        """
+        :return: a copy of the creature. with an altered name.
+        """
+        self.copy_index += 1
+        copy = deepcopy(self)
+        copy.name += str(copy.copy_index)
+
+    def get_settings(self):
+        """
+        NB. not jsonable
+        :return:
+        """
+        return {attr: self[attr] for attr in self.__dict__}

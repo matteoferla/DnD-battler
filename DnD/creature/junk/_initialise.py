@@ -1,8 +1,8 @@
 # inherited by CreatureFiller along with CreatureLoader
 
-from ._init_abilities import CreatueInitAble
-from ._safe_property import CreatureSafeProp
-from ..dice import Dice
+from DnD.creature._init_abilities import CreatueInitAble
+from DnD.creature._safe_property import CreatureSafeProp
+from DnD.dice import Dice
 
 import warnings, json, math
 
@@ -24,7 +24,7 @@ class CreatureInitialise(CreatueInitAble, CreatureSafeProp):
         4. set `xp` (def None)
         5. set `proficiency` (proficiency bonus), 1 + round(self.level / 4) if absent,
             but will be overidden if hp is not specified as the `set_level` will generate it from HD and level
-        6. set ability bonues (`_initialise_abilities` method). To let the user give a base creature
+        6. set ability bonues (`set_ability_dice` method). To let the user give a base creature
             and weak a single ability (__e.g.__ `Creature('Commoner',name='mutant commoner', str=20)),
             the creature has abilities as individual attributes with three letter codes, __e.g.__ `self.str`
             and as a dictionary (`self.abilities`),
@@ -63,8 +63,8 @@ class CreatureInitialise(CreatueInitAble, CreatureSafeProp):
         if 'base' in self.settings:
             # Sanify first and make victim
             if type(self.settings['base']) is str:
-                victim = self.__class__(
-                    self.settings['base'])  # generate a preset and get its attributes. Seems a bit wasteful.
+                # generate a preset and get its attributes. Seems a bit wasteful.
+                victim = self.__class__(self.settings['base'])
             elif isinstance(self.settings['base'], self.__class__):
                 victim = self.settings['base']
             else:
@@ -92,22 +92,22 @@ class CreatureInitialise(CreatueInitAble, CreatureSafeProp):
         self['proficiency'] = 1 + round(self.level / 4)  # TODO check maths on PH
 
         # set abilities
-        self._initialise_abilities()
+        self.set_ability_dice()
 
         # Get HD
-        self.hd = None
+        self.hit_die = None
         if 'hd' in self.settings.keys():
             if type(self.settings['hd']) is Dice:
-                self.hd = self.settings['hd']  # we're dealing with a copy of a beastiary obj.
+                self.hit_die = self.settings['hd']  # we're dealing with a copy of a beastiary obj.
             else:
-                self.hd = Dice(num_faces=int(self.settings['hd']),
+                self.hit_die = Dice(num_faces=int(self.settings['hd']),
                                bonus=self.con.bonus,
                                avg=True,
                                role="hd")
         elif 'size' in self.settings.keys():
             size_cat = {"small": 6, "medium": 8, "large": 10, "huge": 12}
             if self.settings['size'] in size_cat.keys():
-                self.hd = Dice(bonus=self.con.bonus,
+                self.hit_die = Dice(bonus=self.con.bonus,
                                num_faces=size_cat[self.settings['size']],
                                avg=True,
                                role="hd")
@@ -122,11 +122,11 @@ class CreatureInitialise(CreatueInitAble, CreatureSafeProp):
             print("choice HD...", bestchoice)
             # print("diagnosis...",self.ability_bonuses)
             warnings.warn('Unfinished case to guess HD. so Defaulting hit dice to d8 instead')  # TODO finish
-            self.hd = Dice(bonus=self.con.bonus, num_faces=8, avg=True, role="hd")
+            self.hit_die = Dice(bonus=self.con.bonus, num_faces=8, avg=True, role="hd")
         else:
             # defaulting to d8
             warnings.warn('Insufficient info: defaulting hit dice to d8')
-            self.hd = Dice(bonus=self.con.bonus, num_faces=8, avg=True, role="hd")
+            self.hit_die = Dice(bonus=self.con.bonus, num_faces=8, avg=True, role="hd")
 
         # Get HP
         if 'hp' in self.settings.keys():
@@ -151,20 +151,20 @@ class CreatureInitialise(CreatueInitAble, CreatureSafeProp):
 
         ##spell casting ability_bonuses
         if 'sc_ability' in self.settings:
-            self.sc_ab = self.settings['sc_ability'].lower()
+            self.spellcasting_ability_name = self.settings['sc_ability'].lower()
         elif 'healing_spells' in self.settings or 'buff_spells' in self.settings:
-            self.sc_ab = max('wis', 'int', 'cha',
+            self.spellcasting_ability_name = max('wis', 'int', 'cha',
                              key=lambda ab: self[ab].bonus)  # Going for highest. seriously?!
             print(
                 "Please specify spellcasting ability of " +
                 self.name +
                 " next time, this time " +
-                self.sc_ab +
+                self.spellcasting_ability_name +
                 " was used as it was biggest.")
         else:
-            self.sc_ab = 'con'  # TODO fix this botch up.
+            self.spellcasting_ability_name = 'con'  # TODO fix this botch up.
         if not 'healing_bonus' in self.settings:
-            self.settings['healing_bonus'] = self[self.sc_ab].bonus
+            self.settings['healing_bonus'] = self[self.spellcasting_ability_name].bonus
         if 'healing_spells' in self.settings:
             self.starting_healing_spells = int(self.settings['healing_spells'])
             self.healing_spells = self.starting_healing_spells
@@ -315,26 +315,16 @@ class CreatureInitialise(CreatueInitAble, CreatureSafeProp):
         # print("debug... ",cleandex['ability_bonuses'])
         return cleandex
 
-    def _attack_parse(self, attack_parameters):
-        """
-        `self.attacks` has a list of attacks. Each attack is a dictionary of `name` string,
-        `attack` Dice and `damage` Dice.
-        Dice holds the dice(s) and the bonuses and other properties.
 
-        :param attack_parameters: A not-parsed set of attacks: a list of a list of attack bonus int,
-            damage bonus int and damage dice size int/list
-        :return: None (changes self.attacks)
-        """
-        # if type(attack_parameters) is str:
-        #    import json
-        #    attack_parameters = json.loads(attack_parameters)
-        self.attacks = []
-        for monoattack in attack_parameters:
-            att = {'name': monoattack[0]}
-            att['damage'] = Dice(bonus=monoattack[2], num_faces=monoattack[3:], role="damage")
-            att['attack'] = Dice(bonus=monoattack[1], num_faces=20, role="attack", twinned=att['damage'])
-            self.attacks.append(att)
-        for x in self.attacks:
-            self.hurtful += x['damage'].mean()
-            # the average roll of a d6 is not 3 but 3.5
-            # so this value is float
+
+
+
+        # {x: getattr(victim, x) for x in dir(self) if
+        #  getattr(victim, x) and x.find("__") == -1 and x.find("_") != 0 and x != 'beastiary'}
+        # base['ability_bonuses'] = {}
+        # # base.update(**self.settings)
+        # for (k, v) in self.settings.items():
+        #     if type(v) is dict:
+        #         base[k].update(v)
+        #     else:
+        #         base[k] = v

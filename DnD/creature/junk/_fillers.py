@@ -1,6 +1,6 @@
 # inherited by CreatureAdvBase
 
-from ._load_beastiary import CreatureLoader
+from DnD.creature._load_beastiary import CreatureLoader
 from ._initialise import CreatureInitialise
 
 class CreatureFill(CreatureLoader, CreatureInitialise):

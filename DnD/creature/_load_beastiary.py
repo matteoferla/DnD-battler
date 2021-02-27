@@ -9,6 +9,8 @@ class CreatureLoader:
     @classmethod
     def load_beastiary(cls, path):
         """
+        beastiary is the Monster Manual, minus the copyrighted creatures.
+
         `load_beastiary(path)` (formerly just `_beastiary`) is a function while beastiary is the attribute it fills.
 
         There are a few way of how the creature data comes about. This is to initialise the beastiary, now the standard source of beastiary.
@@ -18,6 +20,7 @@ class CreatureLoader:
         :param path: the string to the csv file
         :return: the beastiary, a dictionary (keys: creature names) of dictionary (keys: csv headers)
         The headers of the csv are: (some are for analysis, _e.g._ `hp_fudge`)
+
         * name (becomes the key too)
         * alt
         * alignment
