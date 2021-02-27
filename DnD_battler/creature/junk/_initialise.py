@@ -30,7 +30,7 @@ class CreatureInitialise(CreatueInitAble, CreatureSafeProp):
             and as a dictionary (`self.abilities`),
             while `self.ability_bonuses` has a twin that is the suffix `_bonus` (__e.g.__ `self.str_bonus`).
         7. set `hp`
-        8. AC (`self.ac`)
+        8. AC (`self.armor`)
         9. spellcasting (complex, may change in future): `sc_ab` the spellcasting ability as three char str,
         10. `initiative_bonus`
         11. combat stats... attack_parameters=[['rapier', 4, 2, 8]], alt_attack=['net', 4, 0, 0]

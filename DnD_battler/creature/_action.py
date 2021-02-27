@@ -51,7 +51,7 @@ class CreatureAction(CreatureAdvBase):
 
     def net(self, opponent, verbose=0):
         self.alt_attack['attack'].advantage = self.check_advantage(opponent)
-        if self.alt_attack['attack'].roll(verbose) >= opponent.ac:
+        if self.alt_attack['attack'].roll(verbose) >= opponent.armor.ac:
             opponent.condition = 'netted'
             self.tally['hits'] += 1
             if verbose:
@@ -61,11 +61,11 @@ class CreatureAction(CreatureAdvBase):
 
     def cast_barkskin(self):
         if self.concentrating == 0:
-            self.temp = self.ac
-            self.ac = 16
+            self.temp = self.armor.ac
+            self.armor.ac = 16
             self.concentrating = 1
         elif self.concentrating == 1:
-            self.ac = self.temp
+            self.armor.ac = self.temp
             self.concentrating = 0
 
     def cast_nothing(self, state='activate'):  # Something isn't quite right if this is invoked.
@@ -101,15 +101,13 @@ class CreatureAction(CreatureAdvBase):
             try:
                 opponent = self.arena.find(self.arena.target, self)[0]
             except IndexError:
-                raise self.arena.Victory()
+                raise Victory()
             self.log.debug(f"{self.name} attacks {opponent.name} with {self.attacks[i].name}")
             # This was the hit method. put here for now.
-            self.attacks[i]['attack'].advantage = self.check_advantage(opponent)
-            if self.attacks[i]['attack'].roll(verbose) >= opponent.ac:
-                # self.attacks[i]['damage'].crit = self.attacks[i]['attack'].crit  #Pass the crit if present.
-                h = self.attacks[i]['damage'].roll(verbose)
-                opponent.take_damage(h, verbose)
-                self.tally['damage'] += h
+            damage = self.attacks[i].attack(opponent.armor.ac, advantage=self.check_advantage(opponent))
+            if damage > 0:
+                opponent.take_damage(damage, verbose)
+                self.tally['damage'] += damage
                 self.tally['hits'] += 1
             else:
                 self.tally['misses'] += 1

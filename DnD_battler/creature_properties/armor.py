@@ -2,7 +2,7 @@ from ..dice import AbilityDie
 from typing import *
 
 
-class AC:
+class Armor:
     def __init__(self, ability_dice: List[AbilityDie], bonus: int = 0, name: str = 'unnamed'):
         self.ability_dice = ability_dice
         self.name = name

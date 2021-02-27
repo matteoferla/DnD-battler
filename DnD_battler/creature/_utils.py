@@ -33,7 +33,7 @@ class CreatureUtils(CreatureBase):
         rows.append(self._makeline('Condition', self.condition))
         rows.append(self._makeline('Initiative', self.initiative))
         rows.append(self._makeline('Proficiency', self.proficiency.bonus))
-        rows.append(self._makeline('Armour class', self.ac))
+        rows.append(self._makeline('Armour class', self.armor.ac))
         rows.append('### Attacks')
         rows.append(self._makeline('Potential average damage per turn', self.hurtful))
         for d in self.attacks:

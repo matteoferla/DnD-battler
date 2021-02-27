@@ -1,6 +1,6 @@
 from ..dice import AbilityDie, Dice, SkillRoll, AttackRoll
 from ..creature_properties.proficiency import Proficiency
-from ..creature_properties.ac import AC
+from ..creature_properties.armor import Armor
 from ..log import log
 
 class CreatureBase:
@@ -33,7 +33,7 @@ class CreatureBase:
         self.int = AbilityDie(bonus=0, proficiency=self.proficiency)
         self.cha = AbilityDie(bonus=0, proficiency=self.proficiency)
         # AC
-        self.ac = AC(ability_dice=[self.dex], bonus=0)
+        self.armor = Armor(ability_dice=[self.dex], bonus=0)
         # other
         self.initiative = SkillRoll(self.dex, modifier=0, success_on_crit=False)
         self.spellcasting_ability_name = None
@@ -51,7 +51,7 @@ class CreatureBase:
         self.dodge = 0
         self.concentrating = 0
         self.temp = 0
-        self.buff_spells = None
+        self.buff_spells = 0
         self.conc_fx = None
         self.cr = 0
         self.custom = []

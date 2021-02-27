@@ -1,8 +1,9 @@
 import unittest
 import numpy as np
-from DnD_battler import Dice, AbilityDie, AttackRoll, Creature, log
+from DnD_battler import Dice, AbilityDie, AttackRoll, Creature, log, Encounter
 
 log.handlers[0].setLevel(10)
+
 
 class DiceTester(unittest.TestCase):
 
@@ -31,8 +32,8 @@ class DiceTester(unittest.TestCase):
         able = AbilityDie()
         damage = Dice(num_faces=[8])
         attack = AttackRoll('rolling pin', able, damage)
-        self.assertAlmostEqual(1/20, sum([attack.roll(advantage=0) == 10 for i in range(10000)]) / 10000, 1)
-        self.assertLess(1/20, sum([attack.roll(advantage=-1) == 5 for i in range(10000)]) / 10000)
+        self.assertAlmostEqual(1 / 20, sum([attack.roll(advantage=0) == 10 for i in range(10000)]) / 10000, 1)
+        self.assertLess(1 / 20, sum([attack.roll(advantage=-1) == 5 for i in range(10000)]) / 10000)
         self.assertGreater(1 / 20, sum([attack.roll(advantage=1) == 5 for i in range(10000)]) / 10000)
 
 
@@ -54,6 +55,45 @@ class CreatureTester(unittest.TestCase):
     def test_dragon(self):
         dragon = Creature.load('adult red dragon')
         self.assertEqual(27, dragon.str.score)
+
+
+class EncounterTester(unittest.TestCase):
+    def test_rat_vs_commoner(self):
+        log.handlers[0].setLevel(20)
+        commoner = Creature.load(creature_name='commoner', alignment='Red team')
+        rat = Creature.load(creature_name='giant rat', alignment='Blue team')
+        arena = Encounter(commoner, rat)
+        arena.go_to_war(10)
+        print(arena.tally)
+
+
+    def xtest_brawl(self):
+        # commoners brawling...
+        n = 100
+        achilles = Creature.load(creature_name='commoner', name="Achilles", alignment='Achaeans')
+        patrocles = Creature.load(creature_name='commoner', name="Patrocles", alignment='Achaeans')
+        hector = Creature.load(creature_name='commoner', name="Hector", alignment='Trojans')
+        self.assertEqual([4], achilles.attacks[0].damage_dice.num_faces)  # club.
+        log.info(achilles.attacks[0].damage_dice.mean())
+        ratty = Creature.load("giant rat")
+        rattie = Creature.load("giant rat")
+        log.info(ratty.attacks[0].damage_dice.mean())
+        for damage_die in [Dice(num_faces=[2], bonus=1),
+                           Dice(num_faces=[4], bonus=0),
+                           Dice(num_faces=[6], bonus=-1),
+                           Dice(num_faces=[2, 3], bonus=-1),
+                           Dice(num_faces=[4], bonus=1),
+                           Dice(num_faces=[6], bonus=0),
+                           Dice(num_faces=[8], bonus=-1),
+                           Dice(num_faces=[2], bonus=2),
+                           Dice(num_faces=[2, 3], bonus=0),
+                           Dice(num_faces=[3, 4], bonus=-1)]:
+            achilles.attacks[0].damage_die = damage_die
+            log.info(f'{damage_die.num_faces} {damage_die.mean()}')
+            # print(d, T, T.join(
+            #     [str(Encounter(*party).go_to_war(n).tally['victories']['Achaeans']) for party in
+            #      [(achilles, hector), (achilles, ratty), (achilles, patrocles, ratty),
+            #       (achilles, patrocles, ratty, rattie)]]))
 
 
 ########### Junk methods #####

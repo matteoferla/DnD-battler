@@ -36,14 +36,14 @@ class CreatureLevel(CreatureBase):
                armour_name: Optional[str]=None,
                armor_ability_name:Optional[str]=None, **kwargs):
         if armour_name:
-            self.ac.name = armour_name
+            self.armor.name = armour_name
         if armor_ability_name:
             # so for monk armor_ability_name='dex+str'
-            self.ac.ability_dice = [self[ability_name] for ability_name in armor_ability_name.split('+')]
+            self.armor.ability_dice = [self[ability_name] for ability_name in armor_ability_name.split('+')]
         if ac:
-            self.ac = int(ac)
+            self.armor.ac = int(ac)
         elif armor_bonus:
-            self.ac.bonus = int(armor_bonus)
+            self.armor.bonus = int(armor_bonus)
         else:
             pass
 

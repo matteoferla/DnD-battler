@@ -1,5 +1,7 @@
 from ._base import EncounterBase
 from ..creature import Creature
+from ..victory import Victory
+import math
 
 class EncounterAction(EncounterBase):
 
@@ -67,7 +69,7 @@ class EncounterAction(EncounterBase):
             return "Prediction unavailable for more than 2 teams"
         t_ac = {x: [] for x in self.sides}
         for character in self:
-            t_ac[character.alignment].append(character.ac)
+            t_ac[character.alignment].append(character.armor.ac)
         ac = {x: sum(t_ac[x]) / len(t_ac[x]) for x in t_ac.keys()}
         damage = {x: 0 for x in self.sides}
         hp = {x: 0 for x in self.sides}
@@ -131,10 +133,7 @@ class EncounterAction(EncounterBase):
 
     def go_to_war(self, rounds=1000):
         for i in range(rounds):
-            # print(i,self.KILL)
             self.battle(1, 0)
-            if self.KILL == True:
-                break
         x = {y: self.tally['victories'][y] for y in self.sides}
         se = {}
         for i in list(x):
