@@ -46,9 +46,7 @@ class EncounterAction(EncounterBase):
 
     def roll_for_initiative(self, verbose=0):
         self.combattants = sorted(self.combattants, key=lambda fighter: fighter.initiative.roll(), reverse=True)
-        if verbose:
-            verbose.append("Turn order:")
-            verbose.append(str([x.name for x in self]))
+        self.log.debug(f"Turn order: {[x.name for x in self]}")
 
     def predict(self):
         def safediv(a, b, default=0):

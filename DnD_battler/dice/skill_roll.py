@@ -1,8 +1,11 @@
 from .ability_die import AbilityDie
 from typing import *
-
+from ..log import log
 
 class SkillRoll:
+
+    log = log
+
     def __init__(self, ability_die: AbilityDie, modifier: int = 0, success_on_crit=True):
         """
         Meant for an ability check or a saving throw.

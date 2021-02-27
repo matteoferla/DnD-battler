@@ -1,6 +1,6 @@
 # inherited by CreatureFiller
 
-import csv, warnings
+import csv, os
 
 class CreatureLoader:
 
@@ -71,9 +71,10 @@ class CreatureLoader:
             cls.beastiary = beastiary
             return beastiary
         except Exception as e:
-            warnings.warn('Beastiary error, expected path ' + path + ' error ' + str(e))
+            cls.log.warning('Beastiary error, expected path ' + path + ' error ' + str(e))
             return {}
 
 # ------------- Load ----------------------------------------------------------------------
 
-CreatureLoader.load_beastiary('beastiary.csv')
+path = os.path.normpath(os.path.join(os.path.split(__file__)[0], '..', 'beastiary.csv'))
+CreatureLoader.load_beastiary(path)

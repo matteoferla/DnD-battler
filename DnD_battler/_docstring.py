@@ -13,13 +13,13 @@ The muchkinishness has a deleterious side-effect when the method deathmatch of t
 
 # Example uses
 
-    >>> import DnD
-    >>> DnD.Creature('aboleth') # get from beastiary
-    >>> level1 = DnD.Creature("buff peseant",base='commoner',abilities = {'str': 15,'dex': 14,'con':13,'int':12,'wis':10,'cha': 8}, alignment ="good", attack_parameters='longsword') #a modified creature based off another
-    >>> arena = DnD.Encounter(level1, 'badger')  #Encounter accepts both Creature and strings.
+    >>> import DnD_battler
+    >>> DnD_battler.Creature('aboleth') # get from beastiary
+    >>> level1 = DnD_battler.Creature("buff peseant",base='commoner',abilities = {'str': 15,'dex': 14,'con':13,'int':12,'wis':10,'cha': 8}, alignment ="good", attack_parameters='longsword') #a modified creature based off another
+    >>> arena = DnD_battler.Encounter(level1, 'badger')  #Encounter accepts both Creature and strings.
     >>> print(arena.go_to_war(1e5) #simulate 10,000 times
     >>> print(arena.battle(verbose = 1)) # simulate one encounter and tell what happens.
-    >>> print(DnD.Creature('tarrasque').generate_character_sheet())  #md character sheet.
+    >>> print(DnD_battler.Creature('tarrasque').generate_character_sheet())  #md character sheet.
     >>> print(Encounter("ancient blue dragon").addmob(85).go_to_war(10))  #An ancient blue dragon is nearly a match for 85 commoners (who crit evenutally)...
 
 # Class summary

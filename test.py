@@ -1,7 +1,8 @@
 import unittest
 import numpy as np
-from DnD import Dice, AbilityDie, AttackRoll
-from DnD import Creature
+from DnD_battler import Dice, AbilityDie, AttackRoll, Creature, log
+
+log.handlers[0].setLevel(10)
 
 class DiceTester(unittest.TestCase):
 

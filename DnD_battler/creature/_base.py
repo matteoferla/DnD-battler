@@ -1,11 +1,13 @@
 from ..dice import AbilityDie, Dice, SkillRoll, AttackRoll
 from ..creature_properties.proficiency import Proficiency
 from ..creature_properties.ac import AC
+from ..log import log
 
 class CreatureBase:
     # inherited by utils
 
     ability_names = ['str', 'dex', 'con', 'wis', 'int', 'cha']
+    log = log
 
     def __init__(self):
         self.name = 'unnamed'

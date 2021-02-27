@@ -1,9 +1,10 @@
+# DnD Encounter simulator
+Simulate who would win in an Dungeons and Dragons encounter
+
 > This is a python 3 script and is not intended to work with 2. Some folk may have made forks that do —I don't know.
 > This code was my first project switching from Perl to Python, so was rather messy.
 > Due to the interest I have refactored it to make it cleaner (see [changelog 0.2](change_log_0.2.md).
-  
 
-# DnD Encounter simulator
 Welcome to the D&D 5e Encounter simulator.
 It was written to determine victory probabilities and to test some hypotheses.
 [An online version of the simulator](https://extras.matteoferla.com/dnd).
@@ -65,8 +66,7 @@ def trumpconomy(self,verbose=0, assess=0):
             opponent = random.choice([other for other in self.arena.combattants if other is not self]) #TrumpMod kill all bar self.
         except IndexError:
             raise self.arena.Victory()
-        if verbose:
-            verbose.append(self.name + ' attacks ' + opponent.name + ' with ' + str(self.attacks[i]['name']))
+        self.log.debug(self.name + ' attacks ' + opponent.name + ' with ' + str(self.attacks[i]['name']))
         # This was the hit method. put here for now.
         self.attacks[i]['attack'].advantage = self.check_advantage(opponent)
         if self.attacks[i]['attack'].roll(verbose) >= opponent.ac:

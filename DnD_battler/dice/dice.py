@@ -2,9 +2,11 @@ from __future__ import annotations
 from typing import *
 import random, re
 from collections import Counter
-
+from ..log import log
 
 class Dice:
+
+    log = log
 
     def __init__(self,
                  num_faces: Union[int, List[int]] = 20,

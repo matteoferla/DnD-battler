@@ -1,5 +1,6 @@
+from ._action import EncounterAction # inherits EncounterBase
 
-class Encounter:
+class Encounter(EncounterAction):
     """
     The encounter class is the arena for the battle
     In a dimentionless model, move action and the main actions dash, disengage, hide, shove back/aside, tumble and overrun are meaningless.
@@ -21,3 +22,4 @@ class Encounter:
         netting is a better option albeit a build.
     called shot —not an official rule. Turn economy.
     """
+    pass

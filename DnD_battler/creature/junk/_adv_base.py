@@ -1,6 +1,4 @@
-from DnD.creature.junk._fillers import CreatureFill
-import warnings
-
+from DnD_battler.creature.junk._fillers import CreatureFill
 
 
 class CreatureAdvBase(CreatureFill):
@@ -99,7 +97,7 @@ class CreatureAdvBase(CreatureFill):
         elif type(wildcard) is type(self):
             self._initialise(base=wildcard, **kwargs)
         else:
-            warnings.warn("UNKNOWN COMBATTANT:" + str(wildcard))
+            self.log.warning("UNKNOWN COMBATTANT:" + str(wildcard))
             # raise Exception
             print("I will not raise an error. I will raise Cthulhu to punish this user errors")
             self._fill_from_preset("cthulhu")

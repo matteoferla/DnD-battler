@@ -59,10 +59,12 @@ class AbilityDie(Dice):
         # ---- resolve crit -----------------------
         if not success_on_crit:
             pass
-        elif roll - self.bonus == 20:
+        elif roll == 20:
+            self.log.debug(f'Crit!')
             roll = float('inf')
             self.crit = 1
-        elif roll - self.bonus == 1:
+        elif roll == 1:
+            self.log.debug(f'Fumble!')
             roll = float('-inf')
             self.crit = -1
         else:

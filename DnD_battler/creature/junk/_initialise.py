@@ -1,10 +1,10 @@
 # inherited by CreatureFiller along with CreatureLoader
 
-from DnD.creature._init_abilities import CreatueInitAble
-from DnD.creature._safe_property import CreatureSafeProp
-from DnD.dice import Dice
+from DnD_battler.creature._init_abilities import CreatueInitAble
+from DnD_battler.creature._safe_property import CreatureSafeProp
+from DnD_battler.dice import Dice
 
-import warnings, json, math
+import json
 
 
 class CreatureInitialise(CreatueInitAble, CreatureSafeProp):
@@ -12,7 +12,7 @@ class CreatureInitialise(CreatueInitAble, CreatureSafeProp):
     def _initialise(self, **settings):
         """
         Preface.
-        Character creation in DnD is rather painful. Here due to missing it is even more complex.
+        Character creation in DnD_battler is rather painful. Here due to missing it is even more complex.
         Also, creature, character and monster are used interchangably here unfortunately, which will be fixed one day.
         The method _set
 
@@ -121,11 +121,11 @@ class CreatureInitialise(CreatueInitAble, CreatureSafeProp):
             print(int(self.settings['hp']), int(self.ability_bonuses['con']), int(self.settings['level']))
             print("choice HD...", bestchoice)
             # print("diagnosis...",self.ability_bonuses)
-            warnings.warn('Unfinished case to guess HD. so Defaulting hit dice to d8 instead')  # TODO finish
+            self.log.warning('Unfinished case to guess HD. so Defaulting hit dice to d8 instead')  # TODO finish
             self.hit_die = Dice(bonus=self.con.bonus, num_faces=8, avg=True, role="hd")
         else:
             # defaulting to d8
-            warnings.warn('Insufficient info: defaulting hit dice to d8')
+            self.log.warning('Insufficient info: defaulting hit dice to d8')
             self.hit_die = Dice(bonus=self.con.bonus, num_faces=8, avg=True, role="hd")
 
         # Get HP

@@ -1,7 +1,9 @@
 from ..creature import Creature
 from typing import *
+from ..log import log
 
 class EncounterBase:
+    log = log
     target = 'enemy alive weakest'
     # target='enemy alive weakest', target='enemy alive random', target='enemy alive fiersomest'
 

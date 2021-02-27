@@ -2,8 +2,6 @@
 
 from ._base import CreatureBase
 from ..dice.ability_die import AbilityDie
-import warnings
-import math
 from typing import *
 
 
@@ -31,7 +29,7 @@ class CreatueInitAble(CreatureBase):
         assert ability_name in self.ability_names, f'{ability_name} is not in {self.ability_names}'
         if score is not None and bonus is not None:
             if AbilityDie.score2bonus(score) != bonus:
-                warnings.warn(f'Mismatch with ability {ability_name}: bonus={bonus}, score={score}')
+                self.log.warning(f'Mismatch with ability {ability_name}: bonus={bonus}, score={score}')
             ability_die.score = score
             ability_die.bonus = bonus
         elif score is not None:

@@ -4,7 +4,6 @@ from ._init_abilities import CreatueInitAble
 from ._safe_property import CreatureSafeProp
 from ._level import CreatureLevel
 from ..dice import AbilityDie, AttackRoll
-import warnings
 
 class CreatureAdvBase(CreatueInitAble, CreatureSafeProp, CreatureLoader, CreatureLevel):
 

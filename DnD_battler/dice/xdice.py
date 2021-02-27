@@ -103,12 +103,10 @@ class Dice:
             print("DEBUG: A crit check was called on an uncritable roll ", self.role)
             return result
         elif result == 1:
-            if verbose:
-                verbose.append("Fumble!")
+            self.log.debug(f"Fumble!")
             return -999  # automatic fail
         elif result == 20:
-            if verbose:
-                verbose.append("Crit!")
+            self.log.debug("Crit!")
             if self.twinned: self.twinned.crit = 1
             return 999  # automatic hit.
         else:

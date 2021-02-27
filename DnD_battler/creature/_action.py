@@ -102,8 +102,7 @@ class CreatureAction(CreatureAdvBase):
                 opponent = self.arena.find(self.arena.target, self)[0]
             except IndexError:
                 raise self.arena.Victory()
-            if verbose:
-                verbose.append(self.name + ' attacks ' + opponent.name + ' with ' + str(self.attacks[i]['name']))
+            self.log.debug(f"{self.name} attacks {opponent.name} with {self.attacks[i].name}")
             # This was the hit method. put here for now.
             self.attacks[i]['attack'].advantage = self.check_advantage(opponent)
             if self.attacks[i]['attack'].roll(verbose) >= opponent.ac:
