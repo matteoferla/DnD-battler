@@ -71,3 +71,4 @@ class CreatureBase:
         # this is the average damage it can do. But omits if it hits or not...
         return sum([roll.damage_dice.mean() for roll in self.attacks])
 
+    ac = property(lambda self: self.armor.get_ac(), lambda self, value: self.armor.set_ac(value))

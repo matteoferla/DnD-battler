@@ -50,6 +50,8 @@ class CreatureTester(unittest.TestCase):
         self.assertEqual(5, beefcake.str.bonus, 'wrong str bonus')
         self.assertEqual(1, beefcake.level)
         beefcake.set_level(10)
+        beefcake.ac = 20
+        self.assertEqual(20, beefcake.ac)
         self.assertEqual(4, beefcake.proficiency.bonus)
 
     def test_dragon(self):
