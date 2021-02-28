@@ -36,7 +36,7 @@ class CreatureAdvBase(CreatueInitAble, CreatureSafeProp, CreatureLoader, Creatur
         for key in ('name', 'base', 'type', 'alignment'):
             if key in settings:
                 self[key] = settings[key]
-        for key in ('xp', 'hp'):
+        for key in ('xp', 'hp', 'cr'):
             if key in settings:
                 self[key] = settings[key]
         # -------------- set complex values ----------------------------------------------------------------------------

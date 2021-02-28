@@ -18,6 +18,7 @@ class CreatureBase:
         self.arena = None
         self.level = 1
         self.xp = 0
+        self.cr = 0
         # proficiency
         # self.proficiency.bonus is dynamic based on proficiency.level + proficiency.modifier
         self.proficiency = Proficiency(0, 0)
@@ -53,8 +54,7 @@ class CreatureBase:
         self.dodge = 0
         self.temp = 0
         self.buff_spells = 0
-        self.conc_fx = None
-        self.cr = 0
+        self.conc_fx = lambda: None
         self.custom = []
 
     @property
