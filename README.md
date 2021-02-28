@@ -148,7 +148,7 @@ kim=DnD.Creature("Kim",alignment='NKorea')
 rex=DnD.Creature.load(creature_name="owlbear", name="Rex", alignment='Murica', int=1, wis=1)
 
 # new method
-def trumpconomy(self,verbose=0, assess=0):
+def trumpconomy(self, assess=0):
     if not self.arena.find('alive enemy') and len(self.arena.find('alive ally')) == 1: #TrumpMod: Win when all bar one.
         raise Encounter.Victory()
     for i in range(len(self.attacks)):
@@ -159,10 +159,10 @@ def trumpconomy(self,verbose=0, assess=0):
         self.log.debug(self.name + ' attacks ' + opponent.name + ' with ' + str(self.attacks[i]['name']))
         # This was the hit method. put here for now.
         self.attacks[i]['attack'].advantage = self.check_advantage(opponent)
-        if self.attacks[i]['attack'].roll(verbose) >= opponent.ac:
+        if self.attacks[i]['attack'].roll() >= opponent.ac:
             # self.attacks[i]['damage'].crit = self.attacks[i]['attack'].crit  #Pass the crit if present.
-            h = self.attacks[i]['damage'].roll(verbose)
-            opponent.take_damage(h, verbose)
+            h = self.attacks[i]['damage'].roll()
+            opponent.take_damage()
             self.tally['damage'] += h
             self.tally['hits'] += 1
         else:
@@ -172,7 +172,7 @@ def trumpconomy(self,verbose=0, assess=0):
 # adding the unbound method as a bound method...
 donald.act=types.MethodType(trumpconomy, donald)
 
-print(Encounter(donald,rex,kim).battle(verbose=1).masterlog)
+Encounter(donald,rex,kim).battle()
 ```
 
 In round one Donald attacks his ally Rex, thus proving the behavior is altered.
@@ -188,7 +188,7 @@ Character has a boatload of attributes. It can be initilised with a dictionary o
 Encounter includes the following method:
     battle(reset=1) does a single battle (after a reset of values if asked). it calls a few other fuctions such as roll_for_initiative()
     go_to_war(rounds=1000) performs many battles and gives the team results
-verbosity (verbose=1) is optional. And will be hopefully be written out of the code.
+
 
 There is some code messiness resulting from the unclear distinction between Encounter and Creature object, namely
 a Creature interacting with another is generally a Creature method, while a Creature searching across the list of Creatures in the Encounter is an Encounter method.

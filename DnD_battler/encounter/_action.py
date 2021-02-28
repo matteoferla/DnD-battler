@@ -46,7 +46,7 @@ class EncounterAction(EncounterBase):
             schmuck.alignment = colours.pop(0) + " team"
         return self
 
-    def roll_for_initiative(self, verbose=0):
+    def roll_for_initiative(self):
         self.combattants = sorted(self.combattants, key=lambda fighter: fighter.initiative.roll(), reverse=True)
         self.log.debug(f"Turn order: {[x.name for x in self]}")
 
@@ -90,15 +90,15 @@ class EncounterAction(EncounterBase):
                     round(rate[b], 2)) + '; crudely normalised: ' + str(
                     round(safediv(rate[b], (rate[a] + rate[b]) * 100))) + '%' + N)
 
-    def battle(self, reset=1, verbose=1):
-        if verbose: self.masterlog.append('==NEW BATTLE==')
+    def battle(self, reset=1):
+        self.log.info('==NEW BATTLE==')
         self.tally['battles'] += 1
         if reset: self.reset()
         for schmuck in self: schmuck.tally['battles'] += 1
         self.roll_for_initiative(self.masterlog)
         while True:
             try:
-                if verbose: self.masterlog.append('**NEW ROUND**')
+                self.log.debug('**NEW ROUND**')
                 self.tally['rounds'] += 1
                 for character in self:
                     character.ready()
@@ -127,7 +127,7 @@ class EncounterAction(EncounterBase):
         for character in self:
             character.tally['hp'] += character.hp
             character.tally['healing_spells'] += character.healing_spells
-        if verbose: self.masterlog.append(str(self))
+        self.log.debug(str(self))
         # return self or side?
         return self
 

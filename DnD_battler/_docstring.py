@@ -18,7 +18,7 @@ The muchkinishness has a deleterious side-effect when the method deathmatch of t
     >>> level1 = DnD_battler.Creature("buff peseant",base='commoner',abilities = {'str': 15,'dex': 14,'con':13,'int':12,'wis':10,'cha': 8}, alignment ="good", attack_parameters='longsword') #a modified creature based off another
     >>> arena = DnD_battler.Encounter(level1, 'badger')  #Encounter accepts both Creature and strings.
     >>> print(arena.go_to_war(1e5) #simulate 10,000 times
-    >>> print(arena.battle(verbose = 1)) # simulate one encounter and tell what happens.
+    >>> print(arena.battle()) # simulate one encounter and tell what happens.
     >>> print(DnD_battler.Creature('tarrasque').generate_character_sheet())  #md character sheet.
     >>> print(Encounter("ancient blue dragon").addmob(85).go_to_war(10))  #An ancient blue dragon is nearly a match for 85 commoners (who crit evenutally)...
 
@@ -31,8 +31,7 @@ Character has a boatload of attributes. It can be initilised with a dictionary o
 ## Encounter
 Encounter includes the following method:
     battle(reset=1) does a single battle (after a reset of values if asked). it calls a few other fuctions such as roll_for_initiative()
-    go_to_war(rounds=1000) performs many battles and gives the team results
-verbosity (verbose=1) is optional. And will be hopefully be written out of the code.
+    go_to_war(rounds=1000) performs many battles and gives the team results.
 
 There is some code messiness resulting from the unclear distinction between Encounter and Creature object, namely
 a Creature interacting with another is generally a Creature method, while a Creature searching across the list of Creatures in the Encounter is an Encounter method.
