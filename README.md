@@ -3,7 +3,8 @@ Simulate who would win in an Dungeons and Dragons encounter
 
 > This is a python 3 script and is not intended to work with 2. Some folk may have made forks that do —I don't know.
 > This code was my first project switching from Perl to Python, so was rather messy.
-> Due to the interest I have refactored it to make it cleaner (see [changelog 0.2](change_log_0.2.md).
+> Due to the interest I have refactored it to make it cleaner (see [changelog 0.2](change_log_0.2.md)).
+> I accidentally pushed to master... so the code is unstable today
 
 Welcome to the D&D 5e Encounter simulator.
 It was written to determine victory probabilities and to test some hypotheses.
@@ -32,16 +33,16 @@ The muchkinishness has a deleterious side-effect when the method deathmatch of t
 **Actions.** Action choice is dictated by turn economy. A character of a team with the greater turn economy will dodge (if it knows itself a target) or throw a net (if it has one), and so forth while a creature on the oppose side will opt for a slugfest.
 
 ```
->>> import DnD
->>> DnD.Creature('aboleth') # get from beastiary
->>> level1 = DnD.Creature("buff peseant",base='commoner',abilities = {'str': 15,'dex': 14,'con':13,'int':12,'wis':10,'cha': 8}, alignment ="good", attack_parameters='longsword') #a modified creature based off another
->>> terry=DnD.Creature("lich")
->>> terry.alignment = "good"  #the name of the alignment means only what team name they are in.  
+>>> from DnD_battler import Creature, Encounter
+>>> Creature.load('aboleth') # get from beastiary
+>>> level1 = Creature(name="buff peseant", abilities = {'str': 15,'dex': 14,'con':13,'int':12,'wis':10,'cha': 8}, alignment ="good", attack_parameters=['longsword'])
+>>> billybob = Creature("lich")
+>>> billybob.alignment = "good"  #the name of the alignment means only what team name they are in.  
 >>> arena = DnD.Encounter(level1, 'badger')  #Encounter accepts both Creature and strings.
 >>> print(arena.go_to_war(10000)) #simulate 10,000 times
 >>> print(arena.battle(verbose = 1)) # simulate one encounter and tell what happens.
->>> print(DnD.Creature('tarrasque').generate_character_sheet())  #md character sheet.
->>> print(DnD.Encounter("ancient blue dragon").addmob(85).go_to_war(10))  #An ancient blue dragon is nearly a match for 85 commoners (who crit evenutally)...
+>>> print(Creature.load('tarrasque').generate_character_sheet())  #md character sheet.
+>>> print(Encounter.load("ancient blue dragon").addmob(85).go_to_war(10))  #An ancient blue dragon is nearly a match for 85 commoners (who crit evenutally)...
 ```
 
 # Note on altering methods
@@ -53,9 +54,9 @@ If you want to override the behaviour of say a creature to attack regardlessly a
 ```
 import random, DnD, types
 
-donald=DnD.Creature("Donald",base="commoner",alignment='Murica')
-kim=DnD.Creature("Kim",base="commoner", alignment='NKorea')
-rex=DnD.Creature("Rex",base="owlbear",alignment='Murica')
+donald=Creature("Donald", alignment='Murica')
+kim=DnD.Creature("Kim",alignment='NKorea')
+rex=DnD.Creature.load(creature_name="owlbear", name="Rex", alignment='Murica', int=1, wis=1)
 
 # new method
 def trumpconomy(self,verbose=0, assess=0):
@@ -82,7 +83,7 @@ def trumpconomy(self,verbose=0, assess=0):
 # adding the unbound method as a bound method...
 donald.act=types.MethodType(trumpconomy, donald)
 
-print(DnD.Encounter(donald,rex,kim).battle(verbose=1).masterlog)
+print(Encounter(donald,rex,kim).battle(verbose=1).masterlog)
 ```
 
 In round one Donald attacks his ally Rex, thus proving the behavior is altered.
