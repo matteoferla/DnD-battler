@@ -1,6 +1,7 @@
 from ..dice import AbilityDie, Dice, SkillRoll, AttackRoll
 from ..creature_properties.proficiency import Proficiency
 from ..creature_properties.armor import Armor
+from ..creature_properties.size import Size
 from ..log import log
 
 class CreatureBase:
@@ -13,7 +14,7 @@ class CreatureBase:
         self.name = 'unnamed'
         self.base = 'none'    # human bandit
         self.type = 'unknown' # aberation, humanoid
-        self.size = 'medium'
+        self.size = Size('medium')
         self.arena = None
         self.level = 1
         self.xp = 0
@@ -36,20 +37,20 @@ class CreatureBase:
         self.armor = Armor(ability_dice=[self.dex], bonus=0)
         # other
         self.initiative = SkillRoll(self.dex, modifier=0, success_on_crit=False)
+        self.attacks = [AttackRoll(name='club', ability_die=self.str, damage_dice=Dice(4,0), modifier=0)]
+        self.alt_attack = {}
+        self.alignment = 'undeclared'
+        self.concentrating = 0
         self.spellcasting_ability_name = None
         self.starting_healing_spells = 0
         self.healing_spells = self.starting_healing_spells
         self.healing = None  # Normally dice object
-        self.attacks = [AttackRoll(name='club', ability_die=self.str, damage_dice=Dice(4,0), modifier=0)]
-        self.alt_attack = {}
-        self.alignment = 'undeclared'
         # internal stuff
         self.tally = {'damage': 0, 'hits': 0, 'dead': 0, 'misses': 0, 'battles': 0, 'rounds': 0, 'hp': 0,
                       'healing_spells': 0}
         self.copy_index = 1
         self.condition = 'normal'
         self.dodge = 0
-        self.concentrating = 0
         self.temp = 0
         self.buff_spells = 0
         self.conc_fx = None

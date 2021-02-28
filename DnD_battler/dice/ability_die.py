@@ -1,6 +1,7 @@
 from .dice import Dice
 from ..creature_properties.proficiency import Proficiency
 from typing import *
+# from ..creature_properties.size import Size # Size no longer plays a role in AC or abilities.
 
 
 class AbilityDie(Dice):

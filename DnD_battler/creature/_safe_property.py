@@ -14,8 +14,7 @@ class CreatureSafeProp(CreatureBase):
                             xp=int,
                             name=str,
                             base=str,
-                            type=str,
-                            size=str)
+                            type=str)
 
     def __setitem__(self, item: str, value):
         """

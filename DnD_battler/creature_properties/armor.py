@@ -1,5 +1,6 @@
 from ..dice import AbilityDie
 from typing import *
+# from .size import Size # Size no longer plays a role in AC or abilities.
 
 
 class Armor:

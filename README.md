@@ -4,7 +4,7 @@ Simulate who would win in an Dungeons and Dragons encounter
 > This is a python 3 script and is not intended to work with 2. Some folk may have made forks that do —I don't know.
 > This code was my first project switching from Perl to Python, so was rather messy.
 > Due to the interest I have refactored it to make it cleaner (see [changelog 0.2](change_log_0.2.md)).
-> I accidentally pushed to master... so the code is unstable today
+> I accidentally pushed to master, so for now spell attacks do not work.
 
 Welcome to the D&D 5e Encounter simulator.
 It was written to determine victory probabilities and to test some hypotheses.
@@ -22,7 +22,7 @@ Open Game License v 1.0a Copyright 2000, Wizards of the Coast, Inc. Copyright 20
 
 #Documentation
 This module allows the simulation of a D&D encounter.
-It has three main classes:  Dice, Character, Encounter.
+It has three main classes:  Dice (and its derivatives), Character, Encounter.
 It also has a csv file (`beastiary.csv`) containing all 5e SDR monsters.
 
 **Teams.** Multiple creatures of the same alignment will team up to fight creatures of different alignments in a simulation (`Encounter().battle()` for a single iteration or `Encounter().go_to_war()` for multiple).
@@ -40,12 +40,101 @@ The muchkinishness has a deleterious side-effect when the method deathmatch of t
 >>> billybob.alignment = "good"  #the name of the alignment means only what team name they are in.  
 >>> arena = DnD.Encounter(level1, 'badger')  #Encounter accepts both Creature and strings.
 >>> print(arena.go_to_war(10000)) #simulate 10,000 times
->>> print(arena.battle(verbose = 1)) # simulate one encounter and tell what happens.
+>>> print(arena.battle()) # simulate one encounter and tell what happens.
 >>> print(Creature.load('tarrasque').generate_character_sheet())  #md character sheet.
 >>> print(Encounter.load("ancient blue dragon").addmob(85).go_to_war(10))  #An ancient blue dragon is nearly a match for 85 commoners (who crit evenutally)...
 ```
 
-# Note on altering methods
+## Creature: parameters and attributes
+
+The creature class can be started from scratch or from a monster from the manual:
+
+```python
+from DnD_battler import Creature
+Creature()
+Creature.load('commoner')
+```
+Both accept several arguments. 
+
+```python
+from DnD_battler import Creature
+Creature(name="Achilles", alignment='Achaeans')
+Creature.load(creature_name='commoner', name="Achilles", alignment='Achaeans')
+```
+
+Technically, these are set via `apply_parameters`. These are:
+
+* _name_ (`str`) name of creature for logs, stored in `creature.name`
+* _base_ (`str`) No longer accepted as parameter. Please use ``Creature.load(creature_name)``.
+    The attribute ``.base`` is just a keepsake, altering does nothing.
+* _xp_ (`int`) Experience points, does nothing. Stored in `creature.xp`.
+* _size_ (`str`) sets the size. Note the attribute `creature.size` is a Size instance. alter `.size.name` for effects.
+* _alignment_ (`str`) not quite the alignment but the side in the encounter.
+    In future I **may** split these and use alignment to determine side.
+* _arena_ (`Encounter`) the encounter object itself. Stored in `creature.arena`.
+* _level_ (`int`) the level. Stored in `creature.level`, but use `set_level` to alter 
+    and it affects the `.proficiency` attribute.
+* _proficiency_ (`int`) the proficiency bonus, however, the `.proficiency` attribute is a `Proficiency` instance.
+    the `.proficiency.bonus` attribute is the bonus. It scales automatically with level.
+* _hd_ (`int`) hit dice number of faces. Alters `.hit_die.num_faces`. Trigger hp recalculation if no hp specified.
+* _hp_ (`int`) hit points. Note this is calculated automatically otherwise. `.hp` is the current `.hp`,
+    `.starting_hp` is the pre-battle one.
+* _abilities_ (`dict`), _ability_bonuses_ (`dict`), _str_ (`int`), _dex_ (`int`) etc. `ab_str` (`int`) etc.: 
+    _abilities_ and _ability_bonuses_ are potentially incomplete dict of 3-letter ability and score/bonus. 
+    3-letter ability take presendence. Bonus takes precedence over score
+    (note that if a mismatching score/bonus is given the score will be kept
+    and not corrected —it has no effect.
+    The abilities are stored as 3-letter attributes with a unique `Ability` die. Proficiency is already added.
+    so `creature.str.bonus` is the bonus, `creature.str.temp_modifier` is a temp modifier and
+    `creature.str.score` is the score. Note that derived abilities, such as attack rolls and skill checks
+    (`AttackRoll` and `SkillRoll`) are dependent on this die, so change the properties as opposed to setting a new one.
+    This allows AttackRolls to have a weapon-specific attack bonus (in addition to a damage bonus) which gets added to
+    a `.proficiency.bonus`, `ability_die.temp_modifier` and `ability_die.bonus`.
+* _initiative_bonus_ (`int`): this alters the `.initiative.modifier` as `initiative` is a `SkillRoll`.
+    
+## Dice
+
+The `Dice` object is easy. It has `.num_faces`, a `.bonus` and a `.avg` boolean flag which controls whether rolls are 
+always an average (NPC style). The method `roll` rolls the dice and adds the bonus (`base_roll` does not). 
+
+Then `Ability` extends this by taking into account `Proficiency` stored in the `.proficiency` attribute.
+`temp_modifier` and taking account of advantage. `score` does nothing really.
+
+Then `SkillRoll` wraps around an ability die adding a `modifier`. Note that `bonuses` (plural) 
+gives the sum of the bonuses. The attribute `bonus` is not used.
+Altering an ability die will automatically affect the dependent skill rolls.
+
+Then `AttackRoll` extends `SkillRoll` further and has a bound damage dice. `attack` against an ac value
+rolls and returns damage.
+
+## Logging
+
+The module uses a shared `logging.Logger` with a `sys.stdout` stream set to `logging.INFO`.
+
+```python
+from DnD_battler import Creature, log
+
+log is Creature.log
+```
+
+Therefore, alter the logging to a different handler if needed as per usual.
+
+```python
+from DnD_battler import log
+import logging, io
+
+# change the default...
+log.handlers[0].setLevel(logging.DEBUG)  # logging.DEBUG = 20
+# add a new one.
+stream = io.StringIO('started')
+handler = logging.StreamHandler(stream)
+handler.set_name('stream')
+handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s - %(message)s'))
+log.addHandler(handler)
+log.info('Next battle!')
+```
+
+## Note on altering methods
 
 The behaviour of a Creature is dictated by `act()` class method.
 Specifically, the simulations runs _n_ encounters via `Encounter(<...>).go_to_war(n)_`, which runs `.battle()` _n_ times. The latter method iterates across the creatures running their `Creature().act()` method, which makes them decide whether to heal, dodge, attack, free themselves, buff, throw net etc. The attack is called `.multiattack()`

@@ -10,18 +10,30 @@ class AttackRoll(SkillRoll):
         self.name = name
         self.damage_dice = damage_dice
 
-    def attack(self, enemy_ac: int, advantage: Optional[int] = None) -> int:
+    def attack(self,
+               enemy_ac: int,
+               advantage: Optional[int] = None,
+               add_ability_to_damage=True,
+               munchkin=False) -> int:
         """
-        returns an integer of the damage incurred. 0 is fail
+        Returns an integer of the damage incurred. 0 is fail.
+        If there is a bonus on the damage, alter the ``.damage_dice.bonus`` first.
 
         :param enemy_ac:
         :param advantage:
+        :param add_ability_to_damage:
+        :param munchkin: proficiency is not added to damage RAW, however munchkins always do....
         :return:
         """
         attack_roll = self.roll(advantage=advantage)
         if attack_roll >= enemy_ac:
             # note this can allow crit trains, were one to alter the crit value.
             damage_roll = sum([self.damage_dice.roll() for i in range(self.ability_die.crit + 1)])
+            if add_ability_to_damage is True:
+                damage_roll += self.ability_die.bonus + self.ability_die.temp_modifier
+            # proficiency is not added to damage RAW, however munchkins always do.
+            if munchkin is True:
+                damage_roll += self.ability_die.proficiency.bonus
         else:
             damage_roll = 0
         return damage_roll

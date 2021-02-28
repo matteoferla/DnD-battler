@@ -33,7 +33,7 @@ class CreatureAdvBase(CreatueInitAble, CreatureSafeProp, CreatureLoader, Creatur
     def apply_settings(self, **settings):
         settings = {k.lower(): v for k, v in settings.items()}
         # -------------- assign fluff values ---------------------------------------------------------------------------
-        for key in ('name', 'base', 'type', 'size', 'alignment'):
+        for key in ('name', 'base', 'type', 'alignment'):
             if key in settings:
                 self[key] = settings[key]
         for key in ('xp', 'hp'):
@@ -45,6 +45,9 @@ class CreatureAdvBase(CreatueInitAble, CreatureSafeProp, CreatureLoader, Creatur
         # arena
         if 'arena' in settings:
             self.arena = settings['arena']
+        # size
+        if 'size' in settings:
+            self.size.name = settings['size']
         # level
         if 'level' in settings:
             self.set_level(**settings)

@@ -16,7 +16,8 @@ class EncounterBase:
         self.name = 'Encounter'
         self.masterlog = []
         self.note = ''
-        self.combattants = [chap for chap in lineup]
+        self.combattants = []
+        self.combattants.extend(lineup)
         for chap in lineup:
             self.append(chap)
 
@@ -38,7 +39,9 @@ class EncounterBase:
     def __iter__(self):
         return iter(self.combattants)
 
-    def append(self, newbie: Creature):
+    def append(self, newbie: Union[Creature, str]):
+        if isinstance(newbie, str):
+            newbie = Creature.load(newbie)
         self.combattants.append(newbie)
         newbie.arena = self
         self.blank()
@@ -52,7 +55,7 @@ class EncounterBase:
     def __str__(self):
         string = "=" * 50 + ' ' + self.name + " " + "=" * 50 + N
         string += self.predict()
-        string += "-" * 110 + N
+        string += "-" * 110 + '\n'
         string += "Battles: " + str(self.tally['battles']) + "; Sum of rounds: " + str(
             self.tally['rounds']) + "; " + self.note + N
         for s in self.sides:

@@ -51,10 +51,6 @@ The dice are not rolled, they are solely used to get the common ability bonus
 ## Encounter
 
 * Victory moved out.
-* Encounter accepts only Creatures, not creature names*.
-
-(*) Sure, I have removed few overloaded alternative options, which albeit good for lazier coding may result 
-in unneeded complication.
 
 ## TODO
 
