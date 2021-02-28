@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 from DnD_battler import Dice, AbilityDie, AttackRoll, Creature, log, Encounter
 
-log.handlers[0].setLevel(10)
+log.handlers[0].setLevel(20)
 
 
 class DiceTester(unittest.TestCase):
@@ -66,32 +66,41 @@ class EncounterTester(unittest.TestCase):
         rat = Creature.load(creature_name='giant rat', alignment='Blue team')
         arena = Encounter(commoner, rat)
         arena.go_to_war(10)
-        print(arena.tally)
+        self.assertLess(8, arena.tally['victories']['Blue team'])
 
+    def test_weapon_equivalence(self):
+        log.handlers[0].setLevel(20)
+        tester = Creature.load(creature_name='bandit', alignment='tester team')
+        target = Creature.load(creature_name='bandit', alignment='target team')
+        arena = Encounter(tester, target)
+        log.info(tester.attacks[0].damage_dice.mean())
+        for damage_die in [Dice(num_faces=[2], bonus=3),
+                           Dice(num_faces=[4], bonus=2),
+                           Dice(num_faces=[6], bonus=1),
+                           Dice(num_faces=[8], bonus=0),
+                           Dice(num_faces=[10], bonus=-1),
+                           Dice(num_faces=[2, 2, 2], bonus=0),
+                           Dice(num_faces=[3, 2], bonus=1),
+                           Dice(num_faces=[4, 3], bonus=0),
+                           Dice(num_faces=[5, 4], bonus=-1),]:
+            tester.attacks[0].damage_die = damage_die
+            arena.go_to_war(5000)
+            a = arena.tally["victories"]["tester team"]
+            b = arena.tally["victories"]["target team"]
+            log.info(f'{damage_die.num_faces} {damage_die.mean()} {a/b*100}%')
+            self.assertAlmostEqual(a/5000, b/5000, 1)
+            arena.reset(hard=True)
 
-    def xtest_brawl(self):
+    def test_brawl(self):
         # commoners brawling...
         n = 100
         achilles = Creature.load(creature_name='commoner', name="Achilles", alignment='Achaeans')
         patrocles = Creature.load(creature_name='commoner', name="Patrocles", alignment='Achaeans')
         hector = Creature.load(creature_name='commoner', name="Hector", alignment='Trojans')
+        priam = Creature.load(creature_name='commoner', name="Priam", alignment='Trojans')
         self.assertEqual([4], achilles.attacks[0].damage_dice.num_faces)  # club.
         log.info(achilles.attacks[0].damage_dice.mean())
-        ratty = Creature.load("giant rat")
-        rattie = Creature.load("giant rat")
-        log.info(ratty.attacks[0].damage_dice.mean())
-        for damage_die in [Dice(num_faces=[2], bonus=1),
-                           Dice(num_faces=[4], bonus=0),
-                           Dice(num_faces=[6], bonus=-1),
-                           Dice(num_faces=[2, 3], bonus=-1),
-                           Dice(num_faces=[4], bonus=1),
-                           Dice(num_faces=[6], bonus=0),
-                           Dice(num_faces=[8], bonus=-1),
-                           Dice(num_faces=[2], bonus=2),
-                           Dice(num_faces=[2, 3], bonus=0),
-                           Dice(num_faces=[3, 4], bonus=-1)]:
-            achilles.attacks[0].damage_die = damage_die
-            log.info(f'{damage_die.num_faces} {damage_die.mean()}')
+        #log.info(f'{damage_die.num_faces} {damage_die.mean()}')
             # print(d, T, T.join(
             #     [str(Encounter(*party).go_to_war(n).tally['victories']['Achaeans']) for party in
             #      [(achilles, hector), (achilles, ratty), (achilles, patrocles, ratty),

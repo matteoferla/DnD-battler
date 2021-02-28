@@ -30,6 +30,9 @@ class SkillRoll:
     def bonuses(self):
         return self.ability_die.bonus + self.ability_die.proficiency.bonus + self.modifier
 
+    def __str__(self):
+        return f'{self.ability_die}+{self.ability_die.proficiency.bonus}+{self.modifier}'
+
 
 #
 #         self.ability_die = ability_die
