@@ -1,4 +1,5 @@
 from ._base import CreatureBase
+from ..actions import Action, MeleeAttack, Multiattack
 from typing import *
 import json
 from ..dice import AttackRoll
@@ -46,24 +47,64 @@ class CreatureLevel(CreatureBase):
             self.armor.bonus = int(armor_bonus)
         else:
             pass
+        return None
 
-    def parse_attacks(self, attacks: Optional=None, attack_parameters:Optional=None, **others):
-        """
-        Two options.
-        Old way via ``attack_parameters`` or
-        via ``attacks``, a dictionary of name, damage_dice, attack_modifier, ability_die
-        Alternatively one could fill Creature.attacks manually with a list of AttackRolls.
+#TODO Make self.actions
+# TODO parse_attacks(attack_parameters=) NO
 
-
-        :param attacks:
-        :param attack_parameters:
-        :return:
-        """
-        if attacks:
-            return [AttackRoll.parse_attack(**{'ability_die': self.str, **attack}) for attack in attack_parameters]
-        elif attack_parameters:
-            if isinstance(attack_parameters, str):
-                attack_parameters = json.loads(attack_parameters)
-            return [AttackRoll.parse_list_attack(attack, self.str) for attack in attack_parameters]
+    def parse_attack(self, attack) -> Action:
+        if attack is None:  # nothing to be done.
+            return None
+        elif isinstance(attack, Action):
+            return attack  # already an action.
+        elif isinstance(attack, dict):
+            roll = AttackRoll.parse_attack(**{'ability_die': self.str, **attack})
+            return MeleeAttack(creature=self, name=name, attack_roll=roll)
+        elif isinstance(attack, list):
+            roll = AttackRoll.parse_list_attack(attack, self.str)
+            return MeleeAttack(creature=self, name=name, attack_roll=roll)
         else:
-            return []
+            raise TypeError(f'attack is of type {type(attack)}')
+
+    def parse_attacks(self,
+                      attacks: Optional[List[dict, Action, AttackRoll]]=None, **others) -> Action:
+        """
+        A multiattack is a curious case where a creature can do multiple attacks as a single action.
+        Although technically it could do a single action –these are not added.
+        The values of ``attacks`` if more than one
+        are interpreted as a multiattack if multiple, regular if one.
+
+        One could fill Creature.actions manually with the Action directly.
+        Or use this.
+        Due to legacy reasons it is heavily overloaded.
+        attacks is a list of "attacks" or a single "attack".
+        This being an action, attackroll, dict or list
+        """
+        # -----------it is not a list ----------------------------------------
+        if attacks is None:
+            return None  # What?
+        elif len(attacks) == 0:
+            return None # ...
+        elif isinstance(attacks, str):
+            # go round again after de-json-ing.
+            return self.parse_attacks(json.loads(attacks))
+        elif isinstance(attacks, (dict, AttackRoll, Action)):
+            # single attack. (list form solved below)
+            return self.parse_attack(attacks)
+        elif not isinstance(attacks, (list, tuple)):
+            raise TypeError(f'Attacks is not list or tuple, but {type(attacks)}')
+        # -----------it is a list ----------------------------------------
+        elif isinstance(attacks[0], str):
+            # attacks[0] is a name. single attack in list form.
+            return self.parse_attack(attacks)
+        elif not isinstance(attacks[0], Action):
+            # attacks need converting first
+            attacks = [self.parse_attack(attack) for attack in attacks]
+            return self.parse_attacks(attacks)
+        elif len(attacks) > 1:
+            # attacks is a list of actions
+            multi = Multiattack(creature=self, name='multiattack', actions=attacks)
+            return multi
+        else:
+            # single attack
+            return attacks[0]

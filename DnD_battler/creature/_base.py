@@ -1,4 +1,5 @@
 from ..dice import AbilityDie, Dice, SkillRoll, AttackRoll
+from ..actions import equip_club, AttackType
 from ..creature_properties.proficiency import Proficiency
 from ..creature_properties.armor import Armor
 from ..creature_properties.size import Size
@@ -38,8 +39,9 @@ class CreatureBase:
         self.armor = Armor(ability_dice=[self.dex], bonus=0)
         # other
         self.initiative = SkillRoll(self.dex, modifier=0, success_on_crit=False)
-        self.attacks = [AttackRoll(name='club', ability_die=self.str, damage_dice=Dice(4,0), modifier=0)]
-        self.alt_attack = {}
+        self.actions = [equip_club(self)]
+        # self.attacks
+        # self.alt_attack = {}
         self.alignment = 'undeclared'
         self.concentrating = 0
         self.spellcasting_ability_name = None
@@ -68,8 +70,16 @@ class CreatureBase:
         return {n: getattr(self, n) for n in self.ability_names}
 
     @property
+    def attacks(self):
+        return [action for action in self.actions if action.type in (AttackType.melee, AttackType.ranged)]
+
+
+    @property
     def hurtful(self):
-        # this is the average damage it can do. But omits if it hits or not...
-        return sum([roll.damage_dice.mean() for roll in self.attacks])
+        # Most average damage it can do. But omits if it hits or not...
+        # so the creature could have an oversized weapon (e.g Buster sword from FF)
+        # without monkey grip feat (whatever 5e calls it)
+        # but due to disadvantage or penalty it is pointless...!!
+        return max([roll.damage_dice.mean() for roll in self.attacks])
 
     ac = property(lambda self: self.armor.get_ac(), lambda self, value: self.armor.set_ac(value))
