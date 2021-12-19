@@ -10,10 +10,18 @@ Welcome to the D&D 5e Encounter simulator.
 It was written to determine victory probabilities and to test some hypotheses.
 [An online version of the simulator](https://extras.matteoferla.com/dnd).
     
-**NB.** The server goes down quite often as it is a low CPU app on Openshift and, despite the one minute timeout, it maxes out the usage quota and I have to reset it manually —there seem to be a lot of tarrasque vs. dragon battles.    
-So if it down, please feel free to email matteo dot ferla at gmail.com and I'll reboot it.
+**NB.** The server used to go down quite often due to frequent tarrasque vs. dragon battles threads continuing for ever.    
+If it is down nowadays (uncommon), please feel free to email matteo dot ferla at gmail.com and I'll reboot it.
 
 **NB.** A repository of the server is available [here](https://github.com/matteoferla/DnD-encounter-simulator-site).
+
+## Unfinished
+
+This module is not pip released because it was never finished —the main branch will be stable though.
+Two big requests are to make the combat on a grid,
+and the other make the tactics trained —the logic is conditionals based atm. Also the code became quickly sprawling so
+I started doing a refactor two years and I have only given it 2-3 hours since because work projects,
+ work-related projects, other projects (like a Raspberry Pi Furby) and real life take more of my free time.
 
 ## Monster manual
 The simulator relies on  creature information present in the `beastiary.csv` file. This file was kindly compiled by Jeff Fox.
