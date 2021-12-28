@@ -58,4 +58,4 @@ The dice are not rolled, they are solely used to get the common ability bonus
 * Location, weapon types (range or melee)
 * Decision-making needs to be changed so each option is given a score and by multiplying by a weight vector
     gives the most preferred option. The vector would be manually determined for now... but these are basically
-    hyperparamters for machine learning 
+    hyperparameters for machine learning 
