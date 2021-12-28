@@ -4,13 +4,13 @@ Simulate who would win in an Dungeons and Dragons encounter
 > This is a python 3 script and is not intended to work with 2. Some folk may have made forks that do —I don't know.
 > This code was my first project switching from Perl to Python, so was rather messy.
 > Due to the interest I have refactored it to make it cleaner (see [changelog 0.2](change_log_0.2.md)).
-> I accidentally pushed to master, so for now spell attacks do not work.
+> For work-in-progress see [dev branch](https://github.com/matteoferla/DnD-battler/tree/dev).
 
 Welcome to the D&D 5e Encounter simulator.
 It was written to determine victory probabilities and to test some hypotheses.
-[An online version of the simulator](https://extras.matteoferla.com/dnd).
+[An online version of the simulator](https://dnd.matteoferla.com).
     
-**NB.** The server goes down quite often as it is a low CPU app on Openshift and, despite the one minute timeout, it maxes out the usage quota and I have to reset it manually —there seem to be a lot of tarrasque vs. dragon battles.    
+**NB.** The server goes down occassionally —primarily due to the fact that if a request times out the encounter simulation continues.    
 So if it is down, please feel free to email matteo dot ferla at gmail.com and I'll reboot it.
 
 **NB.** A repository of the server is available [here](https://github.com/matteoferla/DnD-encounter-simulator-site).
