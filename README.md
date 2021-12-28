@@ -11,7 +11,7 @@ It was written to determine victory probabilities and to test some hypotheses.
 [An online version of the simulator](https://extras.matteoferla.com/dnd).
     
 **NB.** The server goes down quite often as it is a low CPU app on Openshift and, despite the one minute timeout, it maxes out the usage quota and I have to reset it manually —there seem to be a lot of tarrasque vs. dragon battles.    
-So if it down, please feel free to email matteo dot ferla at gmail.com and I'll reboot it.
+So if it is down, please feel free to email matteo dot ferla at gmail.com and I'll reboot it.
 
 **NB.** A repository of the server is available [here](https://github.com/matteoferla/DnD-encounter-simulator-site).
 
@@ -26,11 +26,11 @@ It has three main classes:  Dice (and its derivatives), Character, Encounter.
 It also has a csv file (`beastiary.csv`) containing all 5e SDR monsters.
 
 **Teams.** Multiple creatures of the same alignment will team up to fight creatures of different alignments in a simulation (`Encounter().battle()` for a single iteration or `Encounter().go_to_war()` for multiple).
-**Gridless.** The game assumes everyone is in cotact with everyone and not on a grid. The reason being is tactics.
+**Gridless.** The game assumes everyone is in contact with everyone and not on a grid. The reason being is tactics.
 **Tactics.** Tactics are highly problematic both in targetting and actions to take. Players do not play as strategically as they should due to heroism and kill tallies, while the DM might play monsters really dumbly to avoid a TPK.
-**Targetting.** The similator is set up as a munchkin combat where everyone targets the weakest opponent (The global variable `TARGET="enemy alive weakest"` makes the `find_weakest_target` method of the `Encounter` be used, but could be changed (unwisely) to a permutation of enemy/ally alive/dead weakest/random/fiercest.
+**Targetting.** The simulator is set up as a munchkin combat where everyone targets the weakest opponent (The global variable `TARGET="enemy alive weakest"` makes the `find_weakest_target` method of the `Encounter` be used, but could be changed (unwisely) to a permutation of enemy/ally alive/dead weakest/random/fiercest.
 The muchkinishness has a deleterious side-effect when the method deathmatch of the Encounter class is invoked —this allocates each Creature object in the Encounter object in a different team.
-**Actions.** Action choice is dictated by turn economy. A character of a team with the greater turn economy will dodge (if it knows itself a target) or throw a net (if it has one), and so forth while a creature on the oppose side will opt for a slugfest.
+**Actions.** Action choice is dictated by turn economy. A character of a team with the greater turn economy will dodge (if it knows itself a target) or throw a net (if it has one), and so forth while a creature on the opposed side will opt for a slugfest.
 
 ```
 >>> from DnD_battler import Creature, Encounter
@@ -104,7 +104,7 @@ Then `SkillRoll` wraps around an ability die adding a `modifier`. Note that `bon
 gives the sum of the bonuses. The attribute `bonus` is not used.
 Altering an ability die will automatically affect the dependent skill rolls.
 
-Then `AttackRoll` extends `SkillRoll` further and has a bound damage dice. `attack` against an ac value
+Then `AttackRoll` extends `SkillRoll` further and has a bound damage dice. `attack` against an AC value
 rolls and returns damage.
 
 ## Logging
@@ -183,7 +183,7 @@ In round one Donald attacks his ally Rex, thus proving the behavior is altered.
 Dice accepts bonus plus an int —8 is a d8— or a list of dice —[6,6] is a 2d6— or nothing —d20.
     roll() distinguishes between a d20 and not. d20 crits have to be passed manually.
 ## Character
-Character has a boatload of attributes. It can be initilised with a dictionary or an unpacked one... or a single name matching a preset.
+Character has a boatload of attributes. It can be initialised with a dictionary or an unpacked one... or a single name matching a preset.
 ## Encounter
 Encounter includes the following method:
     battle(reset=1) does a single battle (after a reset of values if asked). it calls a few other fuctions such as roll_for_initiative()
