@@ -36,7 +36,7 @@ The muchkinishness has a deleterious side-effect when the method deathmatch of t
 >>> from DnD_battler import Creature, Encounter
 >>> Creature.load('aboleth') # get from beastiary
 >>> level1 = Creature(name="buff peseant", abilities = {'str': 15,'dex': 14,'con':13,'int':12,'wis':10,'cha': 8}, alignment ="good", attack_parameters=['longsword'])
->>> billybob = Creature("lich")
+>>> billybob = Creature(name = "lich")
 >>> billybob.alignment = "good"  #the name of the alignment means only what team name they are in.  
 >>> arena = DnD.Encounter(level1, 'badger')  #Encounter accepts both Creature and strings.
 >>> print(arena.go_to_war(10000)) #simulate 10,000 times
