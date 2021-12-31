@@ -74,11 +74,13 @@ class EncounterAction(EncounterBase):
         damage = {x: 0 for x in self.sides}
         hp = {x: 0 for x in self.sides}
         for character in self:
-            for move in character.attacks:
-                move['damage'].avg = True
-                damage[character.alignment] += safediv((20 + move['attack'].bonus - ac[not_us(character.alignment)]),
-                                                       20 * move['damage'].roll())
-                move['damage'].avg = False
+            for attack in character.attacks:
+                ability_die = attack.attack_roll.ability_die
+                ability_die.avg = True
+                damage[character.alignment] += safediv((20 + ability_die.bonus - ac[not_us(character.alignment)]),
+                                                       20 * ability_die.roll())
+                # damage[character.alignment] += safediv((20 + move['attack'].bonus - ac[not_us(character.alignment)]), 20 * move['damage'])
+                ability_die.avg = False
                 hp[character.alignment] += character.starting_hp
         (a, b) = list(self.sides)
         rate = {a: safediv(hp[a], damage[b], 0.0), b: safediv(hp[b], damage[a], 0.0)}
