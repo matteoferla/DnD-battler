@@ -1,6 +1,7 @@
 from ..creature import Creature
 from typing import *
 from ..log import log
+import json
 
 class EncounterBase:
     log = log
