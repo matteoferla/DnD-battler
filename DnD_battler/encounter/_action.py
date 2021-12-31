@@ -105,7 +105,7 @@ class EncounterAction(EncounterBase):
                     if character.isalive():
                         self.active = character
                         character.tally['rounds'] += 1
-                        character.act(self.masterlog)
+                        character.act()
                     else:
                         character.tally['dead'] += 1
             except Victory:
