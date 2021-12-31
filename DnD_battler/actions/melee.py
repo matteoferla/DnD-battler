@@ -1,6 +1,10 @@
 from ..dice import AttackRoll
 from typing import *
 from .enums import AttackType, TargetChoice
+from .action import Action
+from .enums import AttackType
+from typing import *
+
 
 class MeleeAttack(Action):
 
@@ -11,6 +15,9 @@ class MeleeAttack(Action):
                  **kwargs):
         super().__init__(creature=creature, name=name, typology=AttackType.melee,  **kwargs)
         self.attack_roll = attack_roll
+
+    def __str__(self):
+        return f'{self.type} "{self.name}" of {self.creature.name} dealing {self.attack_roll.damage_dice} damage'
 
     def find_targets(self):
         try:

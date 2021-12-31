@@ -1,4 +1,5 @@
 from .action import Action
+from .enums import AttackType
 from typing import *
 
 class Multiattack(Action):

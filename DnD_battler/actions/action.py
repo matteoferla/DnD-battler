@@ -1,19 +1,26 @@
 from .errors import ActionError
+from .enums import AttackType
+from typing import *
+
 
 class Action:
     """
     Remember to override: ``do``, ``absolute_score``, ``find_targets``, ``activatable``.
     """
-    def __init__(self, creature: 'Creature', name : str, typology: Union[str, AttackType] = 'melee', **kwargs):
+
+    def __init__(self, creature: 'Creature', name: str, typology: Union[str, AttackType] = 'melee', **kwargs):
         self.creature = creature
         self.log = self.creature.log
         self.name = name
-        self.type = self._parse_type(typology)
+        self.type: AttackType = self._parse_type(typology)
+
+    def __str__(self):
+        return f'{self.type} "{self.name}" of {self.creature.name}'
 
     def do(self):
         pass
 
-    def _parse_type(self, typology: Union[str, AttackType]):
+    def _parse_type(self, typology: Union[str, AttackType]) -> AttackType:
         if isinstance(typology, AttackType):
             return typology
         elif isinstance(typology, str):
@@ -29,7 +36,7 @@ class Action:
         """
         return [self.creature]
 
-    def find_target(self, valid:bool=True):
+    def find_target(self, valid: bool = True):
         """
         calls ``self.find_targets`` and ``self.is_valid_target``
 

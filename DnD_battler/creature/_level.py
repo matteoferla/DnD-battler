@@ -1,11 +1,12 @@
 from ._base import CreatureBase
-from ..actions import Action, MeleeAttack, Multiattack
+from ..actions import Action, MeleeAttack, Multiattack, equip_standard_weapon, weapons
 from typing import *
 import json
 from ..dice import AttackRoll
 
+
 class CreatureLevel(CreatureBase):
-    def set_level(self, level: int, hp:Optional[int]=None, **other):
+    def set_level(self, level: int, hp: Optional[int] = None, **other):
         """
         Alter the level of the creature.
         :param level: opt. int, the level. if absent it will set it to the stored level.
@@ -16,7 +17,7 @@ class CreatureLevel(CreatureBase):
         if hp is not None:
             self.hp = int(hp)
         elif old_level == 0:  # zero???
-                self.recalculate_hp()
+            self.recalculate_hp()
         else:
             for x in range(level - old_level):
                 self.hp += self.hit_die.roll() + self.con.bonus
@@ -32,10 +33,10 @@ class CreatureLevel(CreatureBase):
             self.hp += self.hit_die.roll()
 
     def set_ac(self,
-               ac:Optional[int]=None,
-               armor_bonus: Optional[int]=None,
-               armour_name: Optional[str]=None,
-               armor_ability_name:Optional[str]=None, **kwargs):
+               ac: Optional[int] = None,
+               armor_bonus: Optional[int] = None,
+               armour_name: Optional[str] = None,
+               armor_ability_name: Optional[str] = None, **kwargs):
         if armour_name:
             self.armor.name = armour_name
         if armor_ability_name:
@@ -49,25 +50,29 @@ class CreatureLevel(CreatureBase):
             pass
         return None
 
-#TODO Make self.actions
-# TODO parse_attacks(attack_parameters=) NO
+    # TODO Make self.actions
+    # TODO parse_attacks(attack_parameters=) NO
 
-    def parse_attack(self, attack) -> Action:
+    def parse_attack(self, attack: Union[None, Action, dict, list]) -> Action:
         if attack is None:  # nothing to be done.
             return None
         elif isinstance(attack, Action):
             return attack  # already an action.
         elif isinstance(attack, dict):
             roll = AttackRoll.parse_attack(**{'ability_die': self.str, **attack})
-            return MeleeAttack(creature=self, name=name, attack_roll=roll)
-        elif isinstance(attack, list):
+            return MeleeAttack(creature=self, name=roll.name, attack_roll=roll)
+        elif isinstance(attack, list) and len(attack) > 1:
+            # this is the ancient legacy input ['club', 2, 0, 4]
             roll = AttackRoll.parse_list_attack(attack, self.str)
-            return MeleeAttack(creature=self, name=name, attack_roll=roll)
+            return MeleeAttack(creature=self, name=roll.name, attack_roll=roll)
+        elif isinstance(attack, list) and len(attack) == 1 and attack in weapons:  # single weapon
+            return equip_standard_weapon(self, weapon_name=attack)
         else:
             raise TypeError(f'attack is of type {type(attack)}')
 
     def parse_attacks(self,
-                      attacks: Optional[List[dict, Action, AttackRoll]]=None, **others) -> Action:
+                      attacks: Optional[List[Union[dict, Action, AttackRoll]]] = None,
+                      **others) -> Action:
         """
         A multiattack is a curious case where a creature can do multiple attacks as a single action.
         Although technically it could do a single action –these are not added.
@@ -84,8 +89,10 @@ class CreatureLevel(CreatureBase):
         if attacks is None:
             return None  # What?
         elif len(attacks) == 0:
-            return None # ...
-        elif isinstance(attacks, str):
+            return None  # ... ?
+        elif isinstance(attacks, str) and attacks in weapons:  # single weapon
+            return equip_standard_weapon(self, weapon_name=attacks)
+        elif isinstance(attacks, str):  # json
             # go round again after de-json-ing.
             return self.parse_attacks(json.loads(attacks))
         elif isinstance(attacks, (dict, AttackRoll, Action)):

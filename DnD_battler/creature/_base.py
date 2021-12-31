@@ -1,5 +1,5 @@
 from ..dice import AbilityDie, Dice, SkillRoll, AttackRoll
-from ..actions import equip_club, AttackType
+from ..actions import equip_standard_weapon, AttackType
 from ..creature_properties.proficiency import Proficiency
 from ..creature_properties.armor import Armor
 from ..creature_properties.size import Size
@@ -39,7 +39,7 @@ class CreatureBase:
         self.armor = Armor(ability_dice=[self.dex], bonus=0)
         # other
         self.initiative = SkillRoll(self.dex, modifier=0, success_on_crit=False)
-        self.actions = [equip_club(self)]
+        self.actions = []  #equip_standard_weapon(self, weapon_name='club')
         # self.attacks
         # self.alt_attack = {}
         self.alignment = 'undeclared'
