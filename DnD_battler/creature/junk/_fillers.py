@@ -1,3 +1,6 @@
+raise DeprecationWarning('No longer used')
+
+
 # inherited by CreatureAdvBase
 
 from DnD_battler.creature._load_beastiary import CreatureLoader
