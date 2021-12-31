@@ -1,7 +1,7 @@
 from ._base import EncounterBase
 from ..creature import Creature
 from ..victory import Victory
-import math
+import math, random
 
 class EncounterAction(EncounterBase):
 
