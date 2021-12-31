@@ -95,7 +95,7 @@ class EncounterAction(EncounterBase):
         self.tally['battles'] += 1
         if reset: self.reset()
         for schmuck in self: schmuck.tally['battles'] += 1
-        self.roll_for_initiative(self.masterlog)
+        self.roll_for_initiative()
         while True:
             try:
                 self.log.debug('**NEW ROUND**')
