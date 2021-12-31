@@ -82,13 +82,13 @@ class EncounterAction(EncounterBase):
                 hp[character.alignment] += character.starting_hp
         (a, b) = list(self.sides)
         rate = {a: safediv(hp[a], damage[b], 0.0), b: safediv(hp[b], damage[a], 0.0)}
-        return ('Rough a priori predictions:' + N +
+        return ('Rough a priori predictions:\n' +
                 '> ' + str(a) + '= expected rounds to survive: ' + str(
                     round(rate[a], 2)) + '; crudely normalised: ' + str(
-                    round(safediv(rate[a], (rate[a] + rate[b]) * 100))) + '%' + N +
+                    round(safediv(rate[a], (rate[a] + rate[b]) * 100))) + '%\n' +
                 '> ' + str(b) + '= expected rounds to survive: ' + str(
                     round(rate[b], 2)) + '; crudely normalised: ' + str(
-                    round(safediv(rate[b], (rate[a] + rate[b]) * 100))) + '%' + N)
+                    round(safediv(rate[b], (rate[a] + rate[b]) * 100))) + '%\n')
 
     def battle(self, reset=1):
         self.log.info('==NEW BATTLE==')

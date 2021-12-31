@@ -53,17 +53,17 @@ class EncounterBase:
 
 
     def __str__(self):
-        string = "=" * 50 + ' ' + self.name + " " + "=" * 50 + N
+        string = "=" * 50 + ' ' + self.name + " " + "=" * 50 + '\n'
         string += self.predict()
         string += "-" * 110 + '\n'
         string += "Battles: " + str(self.tally['battles']) + "; Sum of rounds: " + str(
-            self.tally['rounds']) + "; " + self.note + N
+            self.tally['rounds']) + "; " + self.note + '\n'
         for s in self.sides:
             string += "> Team " + str(s) + " = winning battles: " + str(
                 self.tally['victories'][s]) + "; perfect battles: " + str(
                 self.tally['perfect'][s]) + "; close-call battles: " + str(self.tally['close'][s]) + ";\n"
-        string += "-" * 49 + " Combattants  " + "-" * 48 + N
-        for fighter in self.combattants: string += str(fighter) + N
+        string += "-" * 49 + " Combattants  " + "-" * 48 + '\n'
+        for fighter in self.combattants: string += str(fighter) + '\n'
         return string
 
     def json(self):
@@ -93,7 +93,7 @@ class EncounterBase:
             self.append(Creature(other))
         elif type(other) is Creature:
             self.append(other)
-        elif type(other) is Encounter:
+        elif type(other).__name__ == 'Encounter':  # not declared yet
             self.extend(other.combattants)
         else:
             raise TypeError('Unsupported type ' + str(type(other)))
