@@ -17,8 +17,7 @@ class EncounterBase:
         self.name = 'Encounter'
         self.masterlog = []
         self.note = ''
-        self.combattants = []
-        self.combattants.extend(lineup)
+        self.combattants : List[Creature] = []
         for chap in lineup:
             self.append(chap)
 
@@ -52,8 +51,9 @@ class EncounterBase:
             self.append(x)
         return self
 
-
     def __str__(self):
+        # todo change the following to _repr_html_
+        # and make something like f'Encounter {self.name} featuring {[str(com) for com in self.combattants]}'
         string = "=" * 50 + ' ' + self.name + " " + "=" * 50 + '\n'
         string += self.predict()
         string += "-" * 110 + '\n'
