@@ -20,7 +20,7 @@ If it is down nowadays (uncommon), please feel free to email matteo dot ferla at
 This module is not pip released because it was never finished —the main branch will be stable though.
 Two big requests are to make the combat on a grid,
 and the other make the tactics trained —the logic is conditionals based atm. Also the code became quickly sprawling so
-I started doing a refactor two years and I have only given it 2-3 hours since because work projects,
+I started doing a refactor two years ago and I have only given it 2-3 hours since because work projects,
  work-related projects, other projects (like a Raspberry Pi Furby) and real life take more of my free time.
 
 ## Monster manual
