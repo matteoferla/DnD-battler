@@ -30,11 +30,11 @@ class Action:
 
     # ------------ Target ----------------------------------------------------------------------------------------------
 
-    def find_targets(self) -> 'Creature':
+    def find_targets(self) -> List['Creature']:
         """
         Method to be overridden
         """
-        return [self.creature]
+        return [self.creature, ]
 
     def find_target(self, valid: bool = True):
         """
@@ -52,6 +52,10 @@ class Action:
                 pass  # not good target.
         else:
             raise ActionError
+
+    def is_valid_target(self, target: 'Creature') -> bool:
+        """ To be over-ridden"""
+        return True
 
     # ------------ Score -----------------------------------------------------------------------------------------------
     # Decision making: how good is this action and can it be run?

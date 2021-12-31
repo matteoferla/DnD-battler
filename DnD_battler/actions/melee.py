@@ -11,23 +11,25 @@ class MeleeAttack(Action):
 
     def __init__(self,
                  creature,
-                 name : str,
+                 name: str,
                  attack_roll: AttackRoll,
                  **kwargs):
-        super().__init__(creature=creature, name=name, typology=AttackType.melee,  **kwargs)
+        super().__init__(creature=creature, name=name, typology=AttackType.melee, **kwargs)
         self.attack_roll = attack_roll
 
     def __str__(self):
         return f'{self.type} "{self.name}" of {self.creature.name} dealing {self.attack_roll.damage_dice} damage'
 
-    def find_targets(self):
+    def find_targets(self) -> List['Creature']:
         try:
-            return self.creature.arena.find(self.arena.target, self)[0]
+            arena = self.creature.arena
+            return arena.find(arena.target, self.creature)
         except IndexError:
             raise Victory()
 
-    def do(self):
-        opponent = self.find_target()
+    def do(self, opponent: Optional['Creature'] = None) -> Tuple['Creature', int]:
+        if opponent is None:
+            opponent = self.find_target()
         advantage = self.creature.check_advantage(opponent)
         self.log.debug(f"{self.name} attacks {opponent.name} with {self.name}")
         # This was the hit method. put here for now.
@@ -37,8 +39,11 @@ class MeleeAttack(Action):
             self.on_damage(opponent, damage)
             self.creature.tally['damage'] += damage
             self.creature.tally['hits'] += 1
+            self.log.info(f'{self.creature.name} dealt {damage} to {opponent.name}')
         else:
-            self.creaturer.tally['misses'] += 1
+            self.creature.tally['misses'] += 1
+            self.log.info(f'{self.creature.name} missed {opponent.name}')
+        return opponent, damage
 
     def on_damage(self, opponent, amount: int):
         """

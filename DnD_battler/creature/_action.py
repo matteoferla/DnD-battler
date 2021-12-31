@@ -98,6 +98,7 @@ class CreatureAction(CreatureAdvBase):
             self.healing_spells -= 1
 
     def multiattack(self, assess=0):
+        # todo fix the fact that it does all the attacks
         if assess:
             return 0  # the default
         for i in range(len(self.attacks)):
@@ -106,14 +107,9 @@ class CreatureAction(CreatureAdvBase):
             except IndexError:
                 raise Victory()
             self.log.debug(f"{self.name} attacks {opponent.name} with {self.attacks[i].name}")
-            # This was the hit method. put here for now.
-            damage = self.attacks[i].attack(opponent.armor.ac, advantage=self.check_advantage(opponent))
-            if damage > 0:
-                opponent.take_damage(damage)
-                self.tally['damage'] += damage
-                self.tally['hits'] += 1
-            else:
-                self.tally['misses'] += 1
+            # This was the hit method:
+            #damage = self.attacks[i].attack(opponent.armor.ac, advantage=self.check_advantage(opponent))
+            self.attacks[i].do()  # deals damage
 
     # TODO
     def check_action(self, action):
