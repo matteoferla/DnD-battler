@@ -3,6 +3,7 @@ from typing import *
 from .enums import AttackType, TargetChoice
 from .action import Action
 from .enums import AttackType
+from ..victory import Victory
 from typing import *
 
 
