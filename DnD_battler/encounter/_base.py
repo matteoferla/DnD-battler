@@ -62,7 +62,7 @@ class EncounterBase:
             string += "> Team " + str(s) + " = winning battles: " + str(
                 self.tally['victories'][s]) + "; perfect battles: " + str(
                 self.tally['perfect'][s]) + "; close-call battles: " + str(self.tally['close'][s]) + ";\n"
-        string += "-" * 49 + " Combattants  " + "-" * 48 + N
+        string += "-" * 49 + " Combatants  " + "-" * 48 + N
         for fighter in self.combattants: string += str(fighter) + N
         return string
 

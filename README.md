@@ -1,5 +1,5 @@
 # DnD Encounter simulator
-Simulate who would win in an Dungeons and Dragons encounter
+Simulate who would win in a Dungeons and Dragons encounter
 
 > This is a python 3 script and is not intended to work with 2. Some folk may have made forks that do —I don't know.
 > This code was my first project switching from Perl to Python, so was rather messy.
@@ -29,14 +29,14 @@ It also has a csv file (`beastiary.csv`) containing all 5e SDR monsters.
 **Gridless.** The game assumes everyone is in contact with everyone and not on a grid. The reason being is tactics.
 **Tactics.** Tactics are highly problematic both in targetting and actions to take. Players do not play as strategically as they should due to heroism and kill tallies, while the DM might play monsters really dumbly to avoid a TPK.
 **Targetting.** The simulator is set up as a munchkin combat where everyone targets the weakest opponent (The global variable `TARGET="enemy alive weakest"` makes the `find_weakest_target` method of the `Encounter` be used, but could be changed (unwisely) to a permutation of enemy/ally alive/dead weakest/random/fiercest.
-The muchkinishness has a deleterious side-effect when the method deathmatch of the Encounter class is invoked —this allocates each Creature object in the Encounter object in a different team.
+The muchkinishness has a deleterious side-effect when the method deathmatch of the Encounter class is invoked —this allocates each Creature object in the Encounter object to a different team.
 **Actions.** Action choice is dictated by turn economy. A character of a team with the greater turn economy will dodge (if it knows itself a target) or throw a net (if it has one), and so forth while a creature on the opposed side will opt for a slugfest.
 
 ```
 >>> from DnD_battler import Creature, Encounter
 >>> Creature.load('aboleth') # get from beastiary
->>> level1 = Creature(name="buff peseant", abilities = {'str': 15,'dex': 14,'con':13,'int':12,'wis':10,'cha': 8}, alignment ="good", attack_parameters=['longsword'])
->>> billybob = Creature("lich")
+>>> level1 = Creature(name="buff peasant", abilities = {'str': 15,'dex': 14,'con':13,'int':12,'wis':10,'cha': 8}, alignment ="good", attack_parameters=['longsword'])
+>>> billybob = Creature(name = "lich")
 >>> billybob.alignment = "good"  #the name of the alignment means only what team name they are in.  
 >>> arena = DnD.Encounter(level1, 'badger')  #Encounter accepts both Creature and strings.
 >>> print(arena.go_to_war(10000)) #simulate 10,000 times
@@ -81,7 +81,7 @@ Technically, these are set via `apply_parameters`. These are:
     `.starting_hp` is the pre-battle one.
 * _abilities_ (`dict`), _ability_bonuses_ (`dict`), _str_ (`int`), _dex_ (`int`) etc. `ab_str` (`int`) etc.: 
     _abilities_ and _ability_bonuses_ are potentially incomplete dict of 3-letter ability and score/bonus. 
-    3-letter ability take presendence. Bonus takes precedence over score
+    3-letter ability take precedence. Bonus takes precedence over score
     (note that if a mismatching score/bonus is given the score will be kept
     and not corrected —it has no effect.
     The abilities are stored as 3-letter attributes with a unique `Ability` die. Proficiency is already added.
@@ -206,7 +206,7 @@ TBA_act(self, verbose=0)
     # TODO
 
 __init__(self, wildcard, **kwargs)
-    Creature object creation. A lot of paramaters make a creature so a lot of assumptions are made (see __init__`).
+    Creature object creation. A lot of parameters make a creature so a lot of assumptions are made (see __init__`).
     :param wildcard: the name of the creature.
       If nothing else is passed it will take it from the beastiary.
       If a dictionary is passed, it will process it like **kwargs,
@@ -325,18 +325,18 @@ roll(self, verbose=0)
     :return: the value rolled (and alters the dice too if need be)
     
 # class Encounter(builtins.object)
-In a dimentionless model, move action and the main actions dash, disengage, hide, shove back/aside, tumble and overrun are meaningless.
+In a dimensionless model, move action and the main actions dash, disengage, hide, shove back/aside, tumble and overrun are meaningless.
 weapon attack —default
 two-weapon attack —
     Good when the opponent has low AC (<12) if 2nd attack is without proficiency.
-    Stacks with bonuses such as sneak attack or poisoned weapons —neither are in the model.
+    Stacks with bonuses such as sneak attack or poisoned weapons -neither are in the model.
     Due to the 1 action for donning/doffing a shield, switch to two handed is valid for unshielded folk only.
     Best keep two weapon fighting as a prebuild not a combat switch.
 AoE spell attack — Layout…
 targetted spell attack —produce flame is a cantrip so could be written up as a weapon. The bigger ones. Spell slots need to be re-written.
 spell buff —Barkskin is a druidic imperative. Haste? Too much complication.
 spell debuff —Bane…
-dodge —targetted and turn economy
+dodge —targeted and turn economy
 help —high AC target (>18), turn economy, beefcake ally
 ready —teamwork preplanning. No way.
 grapple/climb —very situational. grapple/shove combo or barring somatic.
