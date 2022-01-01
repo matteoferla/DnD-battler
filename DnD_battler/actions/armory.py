@@ -3,7 +3,7 @@ These "weapons" are attacks, not weapons per se.
 They are bound to a creature.
 
 The idea is that beyond the standard weapons more exotic ones can be added.
-Finess is a quality that springs to mind.
+Finesse is a quality that springs to mind.
 
 TODO the standard weapons will be loaded from a JSON or a CSV file.
  for now, they are hardcoded here temporarily.
