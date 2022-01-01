@@ -1,7 +1,7 @@
 from ._base import EncounterBase
 from ..creature import Creature
 from ..victory import Victory
-import math, random
+import math, random, logging
 
 class EncounterAction(EncounterBase):
 
@@ -50,7 +50,7 @@ class EncounterAction(EncounterBase):
         self.combattants = sorted(self.combattants, key=lambda fighter: fighter.initiative.roll(), reverse=True)
         self.log.debug(f"Turn order: {[x.name for x in self]}")
 
-    def predict(self):
+    def predict(self, html_formatting: bool = False) -> str:
         def safediv(a, b, default=0):
             try:
                 return a / b
@@ -84,19 +84,38 @@ class EncounterAction(EncounterBase):
                 hp[character.alignment] += character.starting_hp
         (a, b) = list(self.sides)
         rate = {a: safediv(hp[a], damage[b], 0.0), b: safediv(hp[b], damage[a], 0.0)}
-        return ('Rough a priori predictions:\n' +
-                '> ' + str(a) + '= expected rounds to survive: ' + str(
-                    round(rate[a], 2)) + '; crudely normalised: ' + str(
-                    round(safediv(rate[a], (rate[a] + rate[b]) * 100))) + '%\n' +
-                '> ' + str(b) + '= expected rounds to survive: ' + str(
-                    round(rate[b], 2)) + '; crudely normalised: ' + str(
-                    round(safediv(rate[b], (rate[a] + rate[b]) * 100))) + '%\n')
+        normalise = lambda this, other: f'{safediv(this, (this + other)) * 100:.0f}%'
+        if html_formatting:
+            badgify = lambda i: f'<span class="badge">{i}</span>'
+            return ('<h4>Rough a priori predictions</h4>' +
+                    '<ul>' +
+                    f'<li> <span class="label label-primary">{a}</span>' +
+                    f'<span>expected rounds to survive {badgify(round(rate[a], 2))}</span>' +
+                    f'<span>crudely normalised {badgify(normalise(rate[a], rate[b]))}</span>'
+                    '</li>'
+                    f'<li> <span class="label label-primary">{b}</span>' +
+                    f'<span>expected rounds to survive {badgify(round(rate[b], 2))}</span>' +
+                    f'<span>crudely normalised {badgify(normalise(rate[b], rate[a]))}</span>'
+                    '</li>')
+        else:
+            return ('Rough a priori predictions:\n' +
+                    f'> {a} = expected rounds to survive: {rate[a]:.2f}; ' +
+                    f'crudely normalised: {normalise(rate[a], rate[b])} \n' +
+                    f'> {b} = expected rounds to survive: {rate[b]:.2f}; ' +
+                    f'crudely normalised: {normalise(rate[b], rate[a])} \n')
 
-    def battle(self, reset=1):
+    def battle(self, reset: bool=True):
+        """
+        Verbose was formerly an argument.
+        Now everything is logged.
+        So the verbosity is controlled by the log
+        """
         self.log.info('==NEW BATTLE==')
         self.tally['battles'] += 1
-        if reset: self.reset()
-        for schmuck in self: schmuck.tally['battles'] += 1
+        if reset:
+            self.reset()
+        for schmuck in self:
+            schmuck.tally['battles'] += 1
         self.roll_for_initiative()
         while True:
             try:
@@ -135,7 +154,7 @@ class EncounterAction(EncounterBase):
 
     def go_to_war(self, rounds=1000):
         for i in range(rounds):
-            self.battle(1, 0)
+            self.battle(reset=False)
         x = {y: self.tally['victories'][y] for y in self.sides}
         se = {}
         for i in list(x):
