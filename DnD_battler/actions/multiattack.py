@@ -16,9 +16,9 @@ class Multiattack(Action):
         super().__init__(creature=creature, name=name, typology=AttackType.melee,  **kwargs)
         self.actions = actions
 
-    def do(self):
+    def __call__(self, *args, **kwargs):
         for action in self.actions:
-            action.do()
+            action()
 
     def absolute_score(self):
         return sum([action.absolute_score() for action in self.actions])

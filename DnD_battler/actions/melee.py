@@ -20,7 +20,7 @@ class MeleeAttack(Action):
     def __str__(self):
         return f'{self.type} "{self.name}" of {self.creature.name} dealing {self.attack_roll.damage_dice} damage'
 
-    def do(self, opponent: Optional['Creature'] = None) -> Tuple['Creature', int]:
+    def __call__(self, opponent: Optional['Creature'] = None, *args, **kwargs) -> Tuple['Creature', int]:
         if opponent is None:
             opponent = self.find_target()
         advantage = self.creature.check_advantage(opponent)

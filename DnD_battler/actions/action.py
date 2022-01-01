@@ -18,7 +18,8 @@ class Action:
     def __str__(self):
         return f'{self.type} "{self.name}" of {self.creature.name}'
 
-    def do(self):
+    def __call__(self, *args, **kwargs):
+        """Formerly ``do``."""
         pass
 
     def _parse_type(self, typology: Union[str, AttackType]) -> AttackType:

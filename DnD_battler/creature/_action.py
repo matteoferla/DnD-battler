@@ -109,7 +109,7 @@ class CreatureAction(CreatureAdvBase):
             self.log.debug(f"{self.name} attacks {opponent.name} with {self.attacks[i].name}")
             # This was the hit method:
             #damage = self.attacks[i].attack(opponent.armor.ac, advantage=self.check_advantage(opponent))
-            self.attacks[i].do()  # deals damage
+            self.attacks[i]()  # deals damage
 
     # TODO
     def check_action(self, action):
