@@ -20,13 +20,6 @@ class MeleeAttack(Action):
     def __str__(self):
         return f'{self.type} "{self.name}" of {self.creature.name} dealing {self.attack_roll.damage_dice} damage'
 
-    def find_targets(self) -> List['Creature']:
-        try:
-            arena = self.creature.arena
-            return arena.find(arena.target, self.creature)
-        except IndexError:
-            raise Victory()
-
     def do(self, opponent: Optional['Creature'] = None) -> Tuple['Creature', int]:
         if opponent is None:
             opponent = self.find_target()

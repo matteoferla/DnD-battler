@@ -1,4 +1,5 @@
 from .errors import ActionError
+from ..victory import Victory
 from .enums import AttackType
 from typing import *
 
@@ -34,7 +35,11 @@ class Action:
         """
         Method to be overridden
         """
-        return [self.creature, ]
+        arena = self.creature.arena
+        targets = arena.find(arena.target, self.creature)
+        if len(targets) == 0:
+            raise Victory('No targets')
+        return targets
 
     def find_target(self, valid: bool = True):
         """
@@ -43,7 +48,7 @@ class Action:
         :param valid: filter by valid per self.is_valid_target
         :return:
         """
-        for target in self.find_targets():
+        for target in self.find_targets(): # Victory is raised if there are no targets.
             if not valid:
                 return target
             elif self.is_valid_target(target):
