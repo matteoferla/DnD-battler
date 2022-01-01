@@ -54,6 +54,7 @@ class EncounterBase:
         return self
 
     def __str__(self):
+
         """
         The former verbose code is in describe
         """

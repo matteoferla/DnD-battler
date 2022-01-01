@@ -1,18 +1,17 @@
 # DnD Encounter simulator
-Simulate who would win in an Dungeons and Dragons encounter
+Simulate who would win in a Dungeons and Dragons encounter
 
 > This is a python 3 script and is not intended to work with 2. Some folk may have made forks that do —I don't know.
 > This code was my first project switching from Perl to Python, so was rather messy.
 > Due to the interest I have refactored it to make it cleaner (see [changelog 0.2](change_log_0.2.md)).
-> I accidentally pushed to master, so for now spell attacks do not work.
+> For work-in-progress see [dev branch](https://github.com/matteoferla/DnD-battler/tree/dev).
 
 Welcome to the D&D 5e Encounter simulator.
 It was written to determine victory probabilities and to test some hypotheses.
-[An online version of the simulator](https://extras.matteoferla.com/dnd).
+[An online version of the simulator](https://dnd.matteoferla.com).
     
-**NB.** The server used to go down quite often due to frequent tarrasque vs. dragon battles threads continuing for ever.    
-If it is down nowadays (uncommon), please feel free to email matteo dot ferla at gmail.com and I'll reboot it.
-
+**NB.** The server goes down occassionally —primarily due to the fact that if a request times out the encounter simulation continues.    
+So if it is down, please feel free to email matteo dot ferla at gmail.com and I'll reboot it.
 **NB.** A repository of the server is available [here](https://github.com/matteoferla/DnD-encounter-simulator-site).
 
 ## Unfinished
@@ -34,17 +33,17 @@ It has three main classes:  Dice (and its derivatives), Character, Encounter.
 It also has a csv file (`beastiary.csv`) containing all 5e SDR monsters.
 
 **Teams.** Multiple creatures of the same alignment will team up to fight creatures of different alignments in a simulation (`Encounter().battle()` for a single iteration or `Encounter().go_to_war()` for multiple).
-**Gridless.** The game assumes everyone is in cotact with everyone and not on a grid. The reason being is tactics.
+**Gridless.** The game assumes everyone is in contact with everyone and not on a grid. The reason being is tactics.
 **Tactics.** Tactics are highly problematic both in targetting and actions to take. Players do not play as strategically as they should due to heroism and kill tallies, while the DM might play monsters really dumbly to avoid a TPK.
-**Targetting.** The similator is set up as a munchkin combat where everyone targets the weakest opponent (The global variable `TARGET="enemy alive weakest"` makes the `find_weakest_target` method of the `Encounter` be used, but could be changed (unwisely) to a permutation of enemy/ally alive/dead weakest/random/fiercest.
-The muchkinishness has a deleterious side-effect when the method deathmatch of the Encounter class is invoked —this allocates each Creature object in the Encounter object in a different team.
-**Actions.** Action choice is dictated by turn economy. A character of a team with the greater turn economy will dodge (if it knows itself a target) or throw a net (if it has one), and so forth while a creature on the oppose side will opt for a slugfest.
+**Targetting.** The simulator is set up as a munchkin combat where everyone targets the weakest opponent (The global variable `TARGET="enemy alive weakest"` makes the `find_weakest_target` method of the `Encounter` be used, but could be changed (unwisely) to a permutation of enemy/ally alive/dead weakest/random/fiercest.
+The muchkinishness has a deleterious side-effect when the method deathmatch of the Encounter class is invoked —this allocates each Creature object in the Encounter object to a different team.
+**Actions.** Action choice is dictated by turn economy. A character of a team with the greater turn economy will dodge (if it knows itself a target) or throw a net (if it has one), and so forth while a creature on the opposed side will opt for a slugfest.
 
 ```
 >>> from DnD_battler import Creature, Encounter
 >>> Creature.load('aboleth') # get from beastiary
->>> level1 = Creature(name="buff peseant", abilities = {'str': 15,'dex': 14,'con':13,'int':12,'wis':10,'cha': 8}, alignment ="good", attack_parameters=['longsword'])
->>> billybob = Creature("lich")
+>>> level1 = Creature(name="buff peasant", abilities = {'str': 15,'dex': 14,'con':13,'int':12,'wis':10,'cha': 8}, alignment ="good", attack_parameters=['longsword'])
+>>> billybob = Creature(name = "lich")
 >>> billybob.alignment = "good"  #the name of the alignment means only what team name they are in.  
 >>> arena = DnD.Encounter(level1, 'badger')  #Encounter accepts both Creature and strings.
 >>> print(arena.go_to_war(10000)) #simulate 10,000 times
@@ -89,7 +88,7 @@ Technically, these are set via `apply_parameters`. These are:
     `.starting_hp` is the pre-battle one.
 * _abilities_ (`dict`), _ability_bonuses_ (`dict`), _str_ (`int`), _dex_ (`int`) etc. `ab_str` (`int`) etc.: 
     _abilities_ and _ability_bonuses_ are potentially incomplete dict of 3-letter ability and score/bonus. 
-    3-letter ability take presendence. Bonus takes precedence over score
+    3-letter ability take precedence. Bonus takes precedence over score
     (note that if a mismatching score/bonus is given the score will be kept
     and not corrected —it has no effect.
     The abilities are stored as 3-letter attributes with a unique `Ability` die. Proficiency is already added.
@@ -112,7 +111,7 @@ Then `SkillRoll` wraps around an ability die adding a `modifier`. Note that `bon
 gives the sum of the bonuses. The attribute `bonus` is not used.
 Altering an ability die will automatically affect the dependent skill rolls.
 
-Then `AttackRoll` extends `SkillRoll` further and has a bound damage dice. `attack` against an ac value
+Then `AttackRoll` extends `SkillRoll` further and has a bound damage dice. `attack` against an AC value
 rolls and returns damage.
 
 ## Logging
@@ -191,7 +190,7 @@ In round one Donald attacks his ally Rex, thus proving the behavior is altered.
 Dice accepts bonus plus an int —8 is a d8— or a list of dice —[6,6] is a 2d6— or nothing —d20.
     roll() distinguishes between a d20 and not. d20 crits have to be passed manually.
 ## Character
-Character has a boatload of attributes. It can be initilised with a dictionary or an unpacked one... or a single name matching a preset.
+Character has a boatload of attributes. It can be initialised with a dictionary or an unpacked one... or a single name matching a preset.
 ## Encounter
 Encounter includes the following method:
     battle(reset=1) does a single battle (after a reset of values if asked). it calls a few other fuctions such as roll_for_initiative()
@@ -214,7 +213,7 @@ TBA_act(self, verbose=0)
     # TODO
 
 __init__(self, wildcard, **kwargs)
-    Creature object creation. A lot of paramaters make a creature so a lot of assumptions are made (see __init__`).
+    Creature object creation. A lot of parameters make a creature so a lot of assumptions are made (see __init__`).
     :param wildcard: the name of the creature.
       If nothing else is passed it will take it from the beastiary.
       If a dictionary is passed, it will process it like **kwargs,
@@ -333,18 +332,18 @@ roll(self, verbose=0)
     :return: the value rolled (and alters the dice too if need be)
     
 # class Encounter(builtins.object)
-In a dimentionless model, move action and the main actions dash, disengage, hide, shove back/aside, tumble and overrun are meaningless.
+In a dimensionless model, move action and the main actions dash, disengage, hide, shove back/aside, tumble and overrun are meaningless.
 weapon attack —default
 two-weapon attack —
     Good when the opponent has low AC (<12) if 2nd attack is without proficiency.
-    Stacks with bonuses such as sneak attack or poisoned weapons —neither are in the model.
+    Stacks with bonuses such as sneak attack or poisoned weapons -neither are in the model.
     Due to the 1 action for donning/doffing a shield, switch to two handed is valid for unshielded folk only.
     Best keep two weapon fighting as a prebuild not a combat switch.
 AoE spell attack — Layout…
 targetted spell attack —produce flame is a cantrip so could be written up as a weapon. The bigger ones. Spell slots need to be re-written.
 spell buff —Barkskin is a druidic imperative. Haste? Too much complication.
 spell debuff —Bane…
-dodge —targetted and turn economy
+dodge —targeted and turn economy
 help —high AC target (>18), turn economy, beefcake ally
 ready —teamwork preplanning. No way.
 grapple/climb —very situational. grapple/shove combo or barring somatic.
