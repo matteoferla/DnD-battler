@@ -96,7 +96,7 @@ class EncounterAction(EncounterBase):
                     f'<li> <span class="label label-primary">{b}</span>' +
                     f'<span>expected rounds to survive {badgify(round(rate[b], 2))}</span>' +
                     f'<span>crudely normalised {badgify(normalise(rate[b], rate[a]))}</span>'
-                    '</li>')
+                    '</li></ul>')
         else:
             return ('Rough a priori predictions:\n' +
                     f'> {a} = expected rounds to survive: {rate[a]:.2f}; ' +
