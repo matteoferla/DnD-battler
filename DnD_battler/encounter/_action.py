@@ -1,7 +1,7 @@
 from ._base import EncounterBase
 from ..creature import Creature
 from ..victory import Victory
-import math
+import math, random, logging
 
 class EncounterAction(EncounterBase):
 
@@ -46,11 +46,11 @@ class EncounterAction(EncounterBase):
             schmuck.alignment = colours.pop(0) + " team"
         return self
 
-    def roll_for_initiative(self, verbose=0):
+    def roll_for_initiative(self):
         self.combattants = sorted(self.combattants, key=lambda fighter: fighter.initiative.roll(), reverse=True)
         self.log.debug(f"Turn order: {[x.name for x in self]}")
 
-    def predict(self):
+    def predict(self, html_formatting: bool = False) -> str:
         def safediv(a, b, default=0):
             try:
                 return a / b
@@ -74,38 +74,61 @@ class EncounterAction(EncounterBase):
         damage = {x: 0 for x in self.sides}
         hp = {x: 0 for x in self.sides}
         for character in self:
-            for move in character.attacks:
-                move['damage'].avg = True
-                damage[character.alignment] += safediv((20 + move['attack'].bonus - ac[not_us(character.alignment)]),
-                                                       20 * move['damage'].roll())
-                move['damage'].avg = False
+            for attack in character.attacks:
+                if not hasattr(attack, 'attack_roll'):
+                    continue
+                ability_die = attack.attack_roll.ability_die
+                ability_die.avg = True
+                damage[character.alignment] += safediv((20 + ability_die.bonus - ac[not_us(character.alignment)]),
+                                                       20 * ability_die.roll())
+                # damage[character.alignment] += safediv((20 + move['attack'].bonus - ac[not_us(character.alignment)]), 20 * move['damage'])
+                ability_die.avg = False
                 hp[character.alignment] += character.starting_hp
         (a, b) = list(self.sides)
         rate = {a: safediv(hp[a], damage[b], 0.0), b: safediv(hp[b], damage[a], 0.0)}
-        return ('Rough a priori predictions:' + N +
-                '> ' + str(a) + '= expected rounds to survive: ' + str(
-                    round(rate[a], 2)) + '; crudely normalised: ' + str(
-                    round(safediv(rate[a], (rate[a] + rate[b]) * 100))) + '%' + N +
-                '> ' + str(b) + '= expected rounds to survive: ' + str(
-                    round(rate[b], 2)) + '; crudely normalised: ' + str(
-                    round(safediv(rate[b], (rate[a] + rate[b]) * 100))) + '%' + N)
+        normalise = lambda this, other: f'{safediv(this, (this + other)) * 100:.0f}%'
+        if html_formatting:
+            badgify = lambda i: f'<span class="badge">{i}</span>'
+            return ('<h4>Rough a priori predictions</h4>' +
+                    '<ul>' +
+                    f'<li> <span class="label label-primary">{a}</span>' +
+                    f'<span>expected rounds to survive {badgify(round(rate[a], 2))}</span>' +
+                    f'<span>crudely normalised {badgify(normalise(rate[a], rate[b]))}</span>'
+                    '</li>'
+                    f'<li> <span class="label label-primary">{b}</span>' +
+                    f'<span>expected rounds to survive {badgify(round(rate[b], 2))}</span>' +
+                    f'<span>crudely normalised {badgify(normalise(rate[b], rate[a]))}</span>'
+                    '</li></ul>')
+        else:
+            return ('Rough a priori predictions:\n' +
+                    f'> {a} = expected rounds to survive: {rate[a]:.2f}; ' +
+                    f'crudely normalised: {normalise(rate[a], rate[b])} \n' +
+                    f'> {b} = expected rounds to survive: {rate[b]:.2f}; ' +
+                    f'crudely normalised: {normalise(rate[b], rate[a])} \n')
 
-    def battle(self, reset=1, verbose=1):
-        if verbose: self.masterlog.append('==NEW BATTLE==')
+    def battle(self, reset: bool=True):
+        """
+        Verbose was formerly an argument.
+        Now everything is logged.
+        So the verbosity is controlled by the log
+        """
+        self.log.debug('==NEW BATTLE==')
         self.tally['battles'] += 1
-        if reset: self.reset()
-        for schmuck in self: schmuck.tally['battles'] += 1
-        self.roll_for_initiative(self.masterlog)
+        if reset:
+            self.reset()
+        for schmuck in self:
+            schmuck.tally['battles'] += 1
+        self.roll_for_initiative()
         while True:
             try:
-                if verbose: self.masterlog.append('**NEW ROUND**')
+                self.log.debug('**NEW ROUND**')
                 self.tally['rounds'] += 1
                 for character in self:
                     character.ready()
                     if character.isalive():
                         self.active = character
                         character.tally['rounds'] += 1
-                        character.act(self.masterlog)
+                        character.act()
                     else:
                         character.tally['dead'] += 1
             except Victory:
@@ -127,13 +150,13 @@ class EncounterAction(EncounterBase):
         for character in self:
             character.tally['hp'] += character.hp
             character.tally['healing_spells'] += character.healing_spells
-        if verbose: self.masterlog.append(str(self))
+        self.log.debug(str(self))
         # return self or side?
         return self
 
     def go_to_war(self, rounds=1000):
         for i in range(rounds):
-            self.battle(1, 0)
+            self.battle(reset=False)
         x = {y: self.tally['victories'][y] for y in self.sides}
         se = {}
         for i in list(x):

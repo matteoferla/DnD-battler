@@ -1,9 +1,11 @@
-#from ._fillers import CreatureFill
+# from ._fillers import CreatureFill
 from ._load_beastiary import CreatureLoader
 from ._init_abilities import CreatueInitAble
 from ._safe_property import CreatureSafeProp
 from ._level import CreatureLevel
 from ..dice import AbilityDie, AttackRoll
+from ..actions import Action
+
 
 class CreatureAdvBase(CreatueInitAble, CreatureSafeProp, CreatureLoader, CreatureLevel):
 
@@ -36,38 +38,45 @@ class CreatureAdvBase(CreatueInitAble, CreatureSafeProp, CreatureLoader, Creatur
         for key in ('name', 'base', 'type', 'alignment'):
             if key in settings:
                 self[key] = settings[key]
-        for key in ('xp', 'hp'):
+        for key in ('xp', 'hp', 'cr'):
             if key in settings:
                 self[key] = settings[key]
         # -------------- set complex values ----------------------------------------------------------------------------
-        # abilities
+        # ## abilities
         self.set_ability_dice(**settings)
-        # arena
+        # ## arena
         if 'arena' in settings:
             self.arena = settings['arena']
-        # size
+        # ## size
         if 'size' in settings:
             self.size.name = settings['size']
-        # level
+        # ## level
         if 'level' in settings:
             self.set_level(**settings)
         # proficiency
         if 'proficiency' in settings:
             self.proficiency.bonus = int(settings['proficiency'])
-        # hit dice
+        # ## hit dice
         if 'hd' in settings:
             self.hit_die.num_faces = [int(settings['hd'])]
             if 'hp' not in settings:
                 self.recalculate_hp()
-        # other
+        # ## other
         if 'sc_ability' in settings:
             sc_a = settings['sc_ability'].lower()
             assert sc_a in self.ability_names, f'{sc_a} is not a valid ability name {self.ability_names}'
             self.spellcasting_ability_name = sc_a
-        # ac
+        # ## ac
         self.set_ac(**settings)
         if 'initiative_bonus' in settings:
             self.initiative.modifier = int(settings['initiative_bonus'])
-        # attacks
-        if 'attack_parameters' in settings or 'attacks' in settings:
-            self.attacks = self.parse_attacks(**settings)
+        # ## attacks
+        # attacks used to be a normal variable. Now is is property.
+        # that generates data off ``self.actions``
+        # self.attacks : property -> List[Action]
+        # `parse_attacks` is defined in level file (CreatureLevel)
+        for option_key in ('attacks', 'attack_parameters'):
+            if option_key in settings:
+                attack: Action = self.parse_attacks(settings[option_key])
+                assert f'Attack settings {settings[option_key]} could not be parsed'
+                self.actions.append(attack)

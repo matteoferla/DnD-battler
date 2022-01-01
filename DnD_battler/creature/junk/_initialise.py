@@ -1,8 +1,11 @@
+raise DeprecationWarning('No longer used')
+
 # inherited by CreatureFiller along with CreatureLoader
 
 from DnD_battler.creature._init_abilities import CreatueInitAble
 from DnD_battler.creature._safe_property import CreatureSafeProp
 from DnD_battler.dice import Dice
+from DnD_battler.log import log
 
 import json
 
@@ -205,7 +208,8 @@ class CreatureInitialise(CreatueInitAble, CreatureSafeProp):
                 # 'maul':[6,6],
                 # 'brütal war pick': [8, 8],  # okay, I could not resist it.
 
-                # bastard sword and war axe are no more due to the versatile rule, however they were kept here to keep it simple
+                # bastard sword and war axe are no more due to the versatile rule,
+                # however they were kept here to keep it simple
                 # ranged weapons are missing for now...
                 for w in weapons.keys():
                     if self.settings['attack_parameters'].lower().find(w) > -1:

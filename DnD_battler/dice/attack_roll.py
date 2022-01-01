@@ -2,6 +2,7 @@ from .skill_roll import SkillRoll
 from .ability_die import AbilityDie
 from .dice import Dice
 from typing import *
+from ..log import log
 
 
 class AttackRoll(SkillRoll):
@@ -41,6 +42,7 @@ class AttackRoll(SkillRoll):
     @classmethod  # old input
     def parse_list_attack(cls, attack: list, ability_die):
         # old input. ['club', 2, 0, 4]
+        log.info(f'Legacy type attack params (list) given: {attack}')
         return cls.parse_attack(name=attack[0],
                                 ability_die=ability_die,
                                 damage_dice=Dice(num_faces=[int(n) for n in attack[3:]], bonus=attack[2]),

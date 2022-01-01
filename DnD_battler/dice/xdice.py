@@ -61,11 +61,10 @@ class Dice:
 
     # --------- Alt entry ------------------------------------------------------------------
 
-    def multiroll(self, verbose=0):
+    def multiroll(self):
         """
         A roll that is not a d20. It adds the bonus and rolls (x2 if a crit).
 
-        :param verbose:
         :return:
         """
         if self.avg:  # NPC rolls
@@ -76,7 +75,7 @@ class Dice:
             result *= 2
         return result + self.bonus
 
-    def icosaroll(self, verbose=0):
+    def icosaroll(self):
         """
         A roll that is a d20. It rolls advantage and disadvatage and calls `_critcheck`.
 

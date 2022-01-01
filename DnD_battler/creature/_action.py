@@ -1,5 +1,6 @@
 from ..victory import Victory
 from ._adv_base import CreatureAdvBase
+from typing import *
 
 class CreatureAction(CreatureAdvBase):
 
@@ -12,17 +13,22 @@ class CreatureAction(CreatureAdvBase):
         if self.hp > 0:
             return True
 
-    def take_damage(self, points, verbose=0):
+    def take_damage(self, points, damage_type='unspecified'):
         self.hp -= points
-        if verbose:
-            print(self.name + ' took ' + str(points) + ' of damage. Now on ' + str(self.hp) + ' hp.')
-        if self.concentrating:
-            dc = points / 2
-            if dc < 10: dc = 10
-            if self[self.spellcasting_ability_name].roll() < dc:
+        self.log.debug(self.name + ' took ' + str(points) + ' of damage. Now on ' + str(self.hp) + ' hp.')
+        self.assess_concentration(points / 2)
+
+    def assess_concentration(self, dc) -> Union[None, bool]:
+        if dc < 10:
+            dc = 10
+        if not self.concentrating:
+            return None
+        elif self[self.spellcasting_ability_name].roll() < dc:
                 self.conc_fx()
-                if verbose:
-                    print(self.name + ' has lost their concentration')
+                self.log.debug(self.name + ' has lost their concentration')
+                return False
+        else:
+            return True
 
     def reset(self, hard=False):
         """
@@ -49,13 +55,12 @@ class CreatureAction(CreatureAdvBase):
             adv += -1
         return adv
 
-    def net(self, opponent, verbose=0):
+    def net(self, opponent):
         self.alt_attack['attack'].advantage = self.check_advantage(opponent)
-        if self.alt_attack['attack'].roll(verbose) >= opponent.armor.ac:
+        if self.alt_attack['attack'].roll() >= opponent.armor.ac:
             opponent.condition = 'netted'
             self.tally['hits'] += 1
-            if verbose:
-                print(self.name + " netted " + opponent.name)
+            self.log.debug(self.name + " netted " + opponent.name)
         else:
             self.tally['misses'] += 1
 
@@ -71,30 +76,29 @@ class CreatureAction(CreatureAdvBase):
     def cast_nothing(self, state='activate'):  # Something isn't quite right if this is invoked.
         pass
 
-    def heal(self, points, verbose=0):
+    def heal(self, points):
         self.hp += points
-        if verbose:
-            print(self.name + ' was healed by ' + str(points) + '. Now on ' + str(self.hp) + ' hp.')
+        self.log.debug(self.name + ' was healed by ' + str(points) + '. Now on ' + str(self.hp) + ' hp.')
 
-    def assess_wounded(self, verbose=0):
+    def assess_wounded(self):
         targets = self.arena.find('bloodiest allies')
         if len(targets) > 0:
             weakling = targets[0]
             if weakling.starting_hp > (self.healing.num_faces[0] + self.healing.bonus + weakling.hp):
-                if verbose:
-                    print(self.name + " wants to heal " + weakling.name)
+                self.log.debug(self.name + " wants to heal " + weakling.name)
                 return weakling
             else:
                 return 0
         else:
             raise ValueError('A dead man wants to heal folk')
 
-    def cast_healing(self, weakling, verbose=0):
+    def cast_healing(self, weakling):
         if self.healing_spells > 0:
-            weakling.heal(self.healing.roll(), verbose)
+            weakling.heal(self.healing.roll())
             self.healing_spells -= 1
 
-    def multiattack(self, verbose=0, assess=0):
+    def multiattack(self, assess=0):
+        # todo fix the fact that it does all the attacks
         if assess:
             return 0  # the default
         for i in range(len(self.attacks)):
@@ -103,26 +107,21 @@ class CreatureAction(CreatureAdvBase):
             except IndexError:
                 raise Victory()
             self.log.debug(f"{self.name} attacks {opponent.name} with {self.attacks[i].name}")
-            # This was the hit method. put here for now.
-            damage = self.attacks[i].attack(opponent.armor.ac, advantage=self.check_advantage(opponent))
-            if damage > 0:
-                opponent.take_damage(damage, verbose)
-                self.tally['damage'] += damage
-                self.tally['hits'] += 1
-            else:
-                self.tally['misses'] += 1
+            # This was the hit method:
+            #damage = self.attacks[i].attack(opponent.armor.ac, advantage=self.check_advantage(opponent))
+            self.attacks[i]()  # deals damage
 
     # TODO
-    def check_action(self, action, verbose):
+    def check_action(self, action):
         return getattr(self, action)(assess=1)
 
     # TODO
-    def do_action(self, action, verbose):
+    def do_action(self, action):
         # do it.
         pass
 
     # TODO
-    def TBA_act(self, verbose=0):
+    def TBA_act(self):
         if not self.arena.find('alive enemy'):
             raise Victory()
         x = {'nothing': 'cast_nothing'}
@@ -130,37 +129,34 @@ class CreatureAction(CreatureAdvBase):
         best = sorted(choice.keys(), key=choice.get)[0]
         self.do_action(best)
 
-    def act(self, verbose=0):
+    def act(self):
         if not self.arena.find('alive enemy'):
             raise Victory()
         # BONUS ACTION
         # heal  -healing word, a bonus action.
         if self.healing_spells > 0:
-            weakling = self.assess_wounded(verbose)
+            weakling = self.assess_wounded()
             if weakling != 0:
-                self.cast_healing(weakling, verbose)
+                self.cast_healing(weakling)
         # Main action!
         economy = len(self.arena.find('allies')) > len(self.arena.find('opponents')) > 0
         # Buff?
         if self.condition == 'netted':
             # NOT-RAW: DC10 strength check or something equally easy for monsters
-            if verbose:
-                print(self.name + " freed himself from a net")
+            self.log.debug(self.name + " freed himself from a net")
             self.condition = 'normal'
         elif self.buff_spells > 0 and self.concentrating == 0:
             self.conc_fx()
-            if verbose:
-                print(self.name + ' buffs up!')
+            self.log.debug(self.name + ' buffs up!')
             # greater action economy: waste opponent's turn.
         elif economy and self is self.arena.find('weakest allies')[0]:
-            if verbose:
-                print(self.name + " is dodging")
+            self.log.debug(self.name + " is dodging")
             self.dodge = 1
         elif economy and self.alt_attack['name'] == 'net':
             opponent = self.arena.find('fiersomest enemy alive', self)[0]
             if opponent.condition != 'netted':
-                self.net(opponent, verbose)
+                self.net(opponent)
             else:
-                self.multiattack(verbose)
+                self.multiattack()
         else:
-            self.multiattack(verbose)
+            self.multiattack()

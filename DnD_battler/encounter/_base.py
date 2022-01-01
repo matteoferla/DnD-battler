@@ -1,6 +1,7 @@
 from ..creature import Creature
 from typing import *
 from ..log import log
+import json
 
 class EncounterBase:
     log = log
@@ -16,8 +17,7 @@ class EncounterBase:
         self.name = 'Encounter'
         self.masterlog = []
         self.note = ''
-        self.combattants = []
-        self.combattants.extend(lineup)
+        self.combattants : List[Creature] = []
         for chap in lineup:
             self.append(chap)
 
@@ -42,6 +42,8 @@ class EncounterBase:
     def append(self, newbie: Union[Creature, str]):
         if isinstance(newbie, str):
             newbie = Creature.load(newbie)
+        if isinstance(newbie, dict):
+            newbie = Creature(**newbie)
         self.combattants.append(newbie)
         newbie.arena = self
         self.blank()
@@ -51,20 +53,81 @@ class EncounterBase:
             self.append(x)
         return self
 
-
     def __str__(self):
-        string = "=" * 50 + ' ' + self.name + " " + "=" * 50 + N
-        string += self.predict()
-        string += "-" * 110 + '\n'
-        string += "Battles: " + str(self.tally['battles']) + "; Sum of rounds: " + str(
-            self.tally['rounds']) + "; " + self.note + N
-        for s in self.sides:
-            string += "> Team " + str(s) + " = winning battles: " + str(
-                self.tally['victories'][s]) + "; perfect battles: " + str(
-                self.tally['perfect'][s]) + "; close-call battles: " + str(self.tally['close'][s]) + ";\n"
-        string += "-" * 49 + " Combatants  " + "-" * 48 + N
-        for fighter in self.combattants: string += str(fighter) + N
-        return string
+
+        """
+        The former verbose code is in describe
+        """
+        return f'Encounter {self.name} featuring {[str(com) for com in self.combattants]}'
+
+    def describe(self, html_formatting:bool=False) -> str:
+        badgify = lambda i: f'<span class="badge">{i}</span>'
+        if html_formatting:
+            # it is bootstrap 3 in Jupyter notebook, but with jupyter themes it looks weird.
+            # class="list-group" and class="list-group-item"
+            _listitemiser = lambda item: f'<li>{item}</li>'
+            listify = lambda items: f'<ul>{"".join(map(_listitemiser, items))}</ul>'
+        else:
+            listify = lambda items: ''.join([str(item) + '\n' for item in items])
+
+        # ## Title
+        if html_formatting:
+            text = f'<h3>{self.name}</h3>'
+        else:
+            text = "=" * 50 + ' ' + self.name + " " + "=" * 50 + '\n'
+
+        # ## Prediction
+        text += self.predict(html_formatting=html_formatting)
+        if html_formatting:
+            text += '<hr>'
+        else:
+            text += "-" * 110 + '\n'
+
+        # ## Battles
+        if html_formatting:
+            text += f'<span class="label label-primary">Battles {badgify(self.tally["battles"])}</span>'
+            text += f'&nbsp;'
+            text += f'<span class="label label-default">Sum of rounds {badgify(self.tally["rounds"])}</span>'
+            text += f'<span>{self.note}</span>'
+        else:
+            text += "Battles: " + str(self.tally['battles']) + "; Sum of rounds: " + str(
+                self.tally['rounds']) + "; " + self.note + '\n'
+
+        # ## Team summary
+        teams = []
+        for side in self.sides:
+            if html_formatting:
+                teams.append(f'<b>Team {side}</b> ' +
+                             f'<span>winning battles {badgify(self.tally["victories"][side])}</span> ' +
+                             f'<span>perfect battles {badgify(self.tally["perfect"][side])}</span> ' +
+                             f'<span>close-call battles {badgify(self.tally["close"][side])}</span> ')
+            else:
+                teams.append("> Team " + str(side) +
+                             " = winning battles: " +
+                             str(self.tally['victories'][side]) +
+                             "; perfect battles: " +
+                             str(self.tally['perfect'][side]) +
+                             "; close-call battles: " +
+                             str(self.tally['close'][side]) +
+                             ";\n")
+        if html_formatting:
+            text += listify(teams)
+        else:
+            text += ''.join(teams)+'\n'
+
+        # ## Combatants
+        # Fighter is a D&D class. Combatant is a fighter. while combattant is a herandry term
+        # this will need to be fixed TODO Combattant --> Combatant
+        if html_formatting:
+            text += f'<h4>Combatants</h3>'
+        else:
+            text += "-" * 49 + " Combatants  " + "-" * 48 + '\n'
+        text += listify(map(str, self.combattants))
+        # ## Done
+        return text
+
+    def _repr_html_(self):
+        return self.describe(html_formatting=True)
 
     def json(self):
         jsdic = {"prediction": self.predict(),
@@ -93,7 +156,7 @@ class EncounterBase:
             self.append(Creature(other))
         elif type(other) is Creature:
             self.append(other)
-        elif type(other) is Encounter:
+        elif type(other).__name__ == 'Encounter':  # not declared yet
             self.extend(other.combattants)
         else:
             raise TypeError('Unsupported type ' + str(type(other)))

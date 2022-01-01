@@ -3,6 +3,7 @@ from ._base import CreatureBase
 class CreatureSafeProp(CreatureBase):
 
     def __getitem__(self, item):
+        item = str(item)
         if hasattr(self, item):
             return getattr(self, item)
         else:
