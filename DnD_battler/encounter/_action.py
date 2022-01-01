@@ -75,6 +75,8 @@ class EncounterAction(EncounterBase):
         hp = {x: 0 for x in self.sides}
         for character in self:
             for attack in character.attacks:
+                if not hasattr(attack, 'attack_roll'):
+                    continue
                 ability_die = attack.attack_roll.ability_die
                 ability_die.avg = True
                 damage[character.alignment] += safediv((20 + ability_die.bonus - ac[not_us(character.alignment)]),
@@ -110,7 +112,7 @@ class EncounterAction(EncounterBase):
         Now everything is logged.
         So the verbosity is controlled by the log
         """
-        self.log.info('==NEW BATTLE==')
+        self.log.debug('==NEW BATTLE==')
         self.tally['battles'] += 1
         if reset:
             self.reset()

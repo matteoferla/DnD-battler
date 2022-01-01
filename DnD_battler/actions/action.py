@@ -39,6 +39,7 @@ class Action:
         arena = self.creature.arena
         targets = arena.find(arena.target, self.creature)
         if len(targets) == 0:
+            self.log.debug(f'victory for {self.creature.name}')
             raise Victory('No targets')
         return targets
 

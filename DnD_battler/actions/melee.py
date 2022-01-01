@@ -32,10 +32,10 @@ class MeleeAttack(Action):
             self.on_damage(opponent, damage)
             self.creature.tally['damage'] += damage
             self.creature.tally['hits'] += 1
-            self.log.info(f'{self.creature.name} dealt {damage} to {opponent.name}')
+            self.log.debug(f'{self.creature.name} dealt {damage} to {opponent.name}')
         else:
             self.creature.tally['misses'] += 1
-            self.log.info(f'{self.creature.name} missed {opponent.name}')
+            self.log.debug(f'{self.creature.name} missed {opponent.name}')
         return opponent, damage
 
     def on_damage(self, opponent, amount: int):

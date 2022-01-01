@@ -42,6 +42,8 @@ class EncounterBase:
     def append(self, newbie: Union[Creature, str]):
         if isinstance(newbie, str):
             newbie = Creature.load(newbie)
+        if isinstance(newbie, dict):
+            newbie = Creature(**newbie)
         self.combattants.append(newbie)
         newbie.arena = self
         self.blank()
