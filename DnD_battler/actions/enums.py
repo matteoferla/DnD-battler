@@ -1,7 +1,7 @@
 from enum import Enum
 
 class AttackType(Enum):
-    # I hate uppercase Enum convension.
+    # I hate uppercase Enum convention.
     melee = 1
     ranged = 2
     target_spell = 3
